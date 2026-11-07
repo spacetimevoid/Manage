@@ -5,7 +5,7 @@
 
 Tài liệu này quy định các nguyên tắc bắt buộc mọi AI Assistant (và các subagent) phải tuân thủ nghiêm ngặt trong suốt quá trình phát triển mã nguồn của dự án **Personal Study Vault**.
 
-### 1. Bốn Nguyên Tắc Vàng (Core Rules)
+### 1. Năm Nguyên Tắc Vàng (Core Rules)
 
 > [!IMPORTANT]
 > #### Rule 1: Luôn đối chiếu Context Docs trước khi viết mã
@@ -35,6 +35,13 @@ Tài liệu này quy định các nguyên tắc bắt buộc mọi AI Assistant 
 >   - `docs(...)`: Cập nhật tài liệu
 >   - `refactor(...)`: Cải tiến mã nguồn nhưng không đổi chức năng
 >   - `style(...)`: Định dạng CSS/UI
+
+> [!IMPORTANT]
+> #### Rule 5: No Redundant Annotations (Tuyệt đối không chú thích song ngữ thừa thãi)
+> - Tuyệt đối không được thêm các đoạn chú thích, giải nghĩa tiếng Việt trong ngoặc đơn đằng sau các từ khóa tiếng Anh, thuật ngữ kỹ thuật, hoặc nhãn của nút bấm trên UI.
+> - ❌ Sai: `'Take screenshots and crop (chụp màn hình trực tiếp)'`, `'Dashboard (bảng điều khiển)'`.
+> - ✅ Đúng: `'Take screenshots and crop'`, `'Dashboard'`.
+> - Toàn bộ giao diện phải sử dụng tiếng Anh một cách dứt khoát, sạch sẽ, không giải thích thừa thãi.
 
 ---
 
