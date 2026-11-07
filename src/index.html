@@ -697,7 +697,7 @@
   <!-- ======================================================== -->
   <!-- MODAL: ANKI EXPORT PREVIEW (Dark Mode)                   -->
   <!-- ======================================================== -->
-  <div id="ankiModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+  <div id="ankiModal" class="fixed inset-0 z-[70] bg-black/75 backdrop-blur-xs hidden flex items-center justify-center p-4">
     <div class="bg-[#262626] rounded-lg max-w-sm w-full p-4 shadow-xl border border-[#333333] space-y-3">
       <div class="flex items-center justify-between border-b border-[#333333] pb-2.5">
         <h3 class="text-xs font-bold text-gray-100">Export Anki Flashcard</h3>
@@ -728,7 +728,7 @@
   <!-- ======================================================== -->
   <!-- MODAL: ADD TASK / SOURCE (Live Supabase Insert)           -->
   <!-- ======================================================== -->
-  <div id="quickAddModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+  <div id="quickAddModal" class="fixed inset-0 z-[70] bg-black/75 backdrop-blur-xs hidden flex items-center justify-center p-4">
     <div class="bg-[#262626] rounded-lg max-w-md w-full p-4 shadow-xl border border-[#333333] space-y-3">
       <div class="flex items-center justify-between border-b border-[#333333] pb-2.5">
         <h3 class="text-xs font-bold text-gray-100" id="quickAddModalTitle">Add Task or Exam Source</h3>
@@ -791,7 +791,10 @@
         </div>
 
         <div>
-          <label class="block text-gray-300 font-medium mb-1">Upload Cropped Snippet Image:</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-gray-300 font-medium">Upload Cropped Snippet Image:</label>
+            <span class="text-[10px] text-gray-400 font-mono">Tip: Press Cmd+V to paste screenshot</span>
+          </div>
           <input type="file" id="snippetImageInput" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#333] file:text-gray-200 hover:file:bg-[#3e3e3e] cursor-pointer">
         </div>
 
@@ -859,12 +862,12 @@
     </header>
 
     <!-- Workspace Main Split-View -->
-    <div class="flex-1 flex overflow-hidden relative">
+    <div id="workspaceSplitContainer" class="flex-1 flex overflow-hidden relative">
 
       <!-- ======================================================== -->
-      <!-- CỘT TRÁI (65% width): Trình xem PDF                      -->
+      <!-- CỘT TRÁI (65% default): Trình xem PDF                    -->
       <!-- ======================================================== -->
-      <section class="w-full md:w-[65%] h-full flex flex-col relative bg-[#181818] border-r border-[#333333] overflow-hidden">
+      <section id="workspaceLeftColumn" class="w-full md:w-[65%] h-full flex flex-col relative bg-[#181818] overflow-hidden">
         
         <!-- PDF Viewer Container -->
         <div id="workspacePdfContainer" class="w-full h-full relative flex items-center justify-center">
@@ -887,22 +890,36 @@
           </div>
         </div>
 
-        <!-- Floating 'Crop Snippet' Button at bottom right of PDF Column -->
-        <div class="absolute bottom-6 right-6 z-20">
-          <button onclick="openCropFromCurrentSource()" class="group flex items-center space-x-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 cursor-pointer">
-            <svg class="w-4 h-4 text-white group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
-            </svg>
-            <span>Crop Snippet to Vault</span>
-          </button>
+        <!-- Draggable Scissors Floating Action Button -->
+        <div 
+          id="draggableCropBtn" 
+          style="position: absolute; right: 24px; bottom: 24px; z-index: 35; touch-action: none;" 
+          class="w-12 h-12 rounded-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none transition-transform hover:scale-105" 
+          title="Drag to reposition • Click to Crop Snippet"
+        >
+          <!-- Scissors Icon -->
+          <svg class="w-5 h-5 text-white pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+          </svg>
         </div>
 
       </section>
 
       <!-- ======================================================== -->
-      <!-- CỘT PHẢI (35% width): Sidebar 'Vault & Notes'            -->
+      <!-- DRAGGABLE SPLITTER (Between PDF Viewer & Notes Sidebar) -->
       <!-- ======================================================== -->
-      <aside id="workspaceRightSidebar" class="fixed inset-y-0 right-0 z-30 w-full sm:w-[420px] md:static md:w-[35%] h-full flex flex-col bg-[#222222] border-l border-[#333333] transition-transform duration-200 ease-in-out translate-x-full md:translate-x-0 overflow-hidden shadow-2xl md:shadow-none">
+      <div id="workspaceSplitter" class="hidden md:flex w-2 bg-[#262626] hover:bg-red-600/80 active:bg-red-600 cursor-col-resize items-center justify-center transition-colors select-none z-30 shrink-0 border-x border-[#333333]" title="Drag to resize panels">
+        <div class="h-8 w-0.5 bg-gray-500 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- CỘT PHẢI (35% default): Sidebar 'Vault & Notes'          -->
+      <!-- ======================================================== -->
+      <aside id="workspaceRightSidebar" class="fixed inset-y-0 right-0 z-30 w-full sm:w-[420px] md:static md:w-[35%] h-full flex flex-col bg-[#222222] transition-transform duration-200 ease-in-out translate-x-full md:translate-x-0 overflow-hidden shadow-2xl md:shadow-none">
         
         <!-- Mobile Drawer Header -->
         <div class="md:hidden flex items-center justify-between p-3.5 border-b border-[#333333] bg-[#262626]">
@@ -1830,6 +1847,12 @@
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
       }
+
+      // Initialize draggable splitter and draggable crop scissors button
+      setTimeout(() => {
+        initWorkspaceSplitter();
+        initDraggableCropBtn();
+      }, 50);
     }
 
     function closeSourceWorkspace() {
@@ -1909,11 +1932,226 @@
     }
 
     function openCropFromCurrentSource() {
-      if (!activeWorkspaceSourceId) return;
+      if (!activeWorkspaceSourceId) {
+        showToast('No active exam source selected.');
+        return;
+      }
       openQuickAddModal('vault');
       const select = document.getElementById('snippetSourceSelect');
-      if (select) select.value = activeWorkspaceSourceId;
+      if (select) {
+        select.value = activeWorkspaceSourceId;
+      }
+      setTimeout(() => {
+        document.getElementById('snippetTagsInput')?.focus();
+      }, 100);
     }
+
+    // -------------------------------------------------------------
+    // 5D. DRAGGABLE RESIZABLE SPLITTER (Between PDF & Notes)
+    // -------------------------------------------------------------
+    function initWorkspaceSplitter() {
+      const splitter = document.getElementById('workspaceSplitter');
+      const leftCol = document.getElementById('workspaceLeftColumn');
+      const rightCol = document.getElementById('workspaceRightSidebar');
+      const container = document.getElementById('workspaceSplitContainer');
+      const iframe = document.getElementById('workspacePdfIframe');
+      if (!splitter || !leftCol || !rightCol || !container) return;
+
+      if (splitter._initialized) return;
+      splitter._initialized = true;
+
+      // Restore saved percentage
+      const savedPct = localStorage.getItem('workspace_split_pct');
+      if (savedPct && window.innerWidth >= 768) {
+        const pct = parseFloat(savedPct);
+        if (pct >= 25 && pct <= 80) {
+          leftCol.style.width = pct + '%';
+          rightCol.style.width = (100 - pct) + '%';
+        }
+      }
+
+      let isResizing = false;
+
+      function onMouseDown(e) {
+        if (e.button !== 0) return;
+        isResizing = true;
+        if (iframe) iframe.style.pointerEvents = 'none';
+        splitter.classList.add('bg-red-600');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+
+      function onMouseMove(e) {
+        if (!isResizing) return;
+        const containerRect = container.getBoundingClientRect();
+        const mouseX = e.clientX - containerRect.left;
+        let pct = (mouseX / containerRect.width) * 100;
+
+        // Bound between 25% and 80%
+        pct = Math.max(25, Math.min(80, pct));
+
+        leftCol.style.width = pct + '%';
+        rightCol.style.width = (100 - pct) + '%';
+      }
+
+      function onMouseUp() {
+        if (!isResizing) return;
+        isResizing = false;
+        if (iframe) iframe.style.pointerEvents = 'auto';
+        splitter.classList.remove('bg-red-600');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+
+        const currentPct = parseFloat(leftCol.style.width);
+        if (!isNaN(currentPct)) {
+          localStorage.setItem('workspace_split_pct', currentPct);
+        }
+      }
+
+      splitter.addEventListener('mousedown', onMouseDown);
+    }
+
+    // -------------------------------------------------------------
+    // 5E. DRAGGABLE SCISSORS FLOATING ACTION BUTTON
+    // -------------------------------------------------------------
+    function initDraggableCropBtn() {
+      const btn = document.getElementById('draggableCropBtn');
+      const container = document.getElementById('workspaceLeftColumn');
+      const iframe = document.getElementById('workspacePdfIframe');
+      if (!btn || !container) return;
+
+      // Restore saved position
+      const savedPos = localStorage.getItem('crop_btn_pos');
+      if (savedPos) {
+        try {
+          const pos = JSON.parse(savedPos);
+          if (pos && pos.left && pos.top) {
+            btn.style.left = pos.left;
+            btn.style.top = pos.top;
+            btn.style.right = 'auto';
+            btn.style.bottom = 'auto';
+          }
+        } catch {}
+      }
+
+      if (btn._initialized) return;
+      btn._initialized = true;
+
+      let isDragging = false;
+      let startX, startY, origX, origY;
+      let hasMoved = false;
+
+      function onPointerDown(e) {
+        if (e.type === 'mousedown' && e.button !== 0) return;
+        
+        isDragging = true;
+        hasMoved = false;
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+        startX = clientX;
+        startY = clientY;
+
+        const rect = btn.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        origX = rect.left - containerRect.left;
+        origY = rect.top - containerRect.top;
+
+        if (iframe) iframe.style.pointerEvents = 'none';
+
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+
+        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+          hasMoved = true;
+        }
+
+        if (!hasMoved) return;
+
+        if (e.cancelable) e.preventDefault();
+
+        const containerRect = container.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+
+        let newX = origX + dx;
+        let newY = origY + dy;
+
+        // Keep inside bounds
+        newX = Math.max(10, Math.min(containerRect.width - btnRect.width - 10, newX));
+        newY = Math.max(10, Math.min(containerRect.height - btnRect.height - 10, newY));
+
+        btn.style.left = newX + 'px';
+        btn.style.top = newY + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+
+        if (iframe) iframe.style.pointerEvents = 'auto';
+
+        document.removeEventListener('mousemove', onPointerMove);
+        document.removeEventListener('mouseup', onPointerUp);
+        document.removeEventListener('touchmove', onPointerMove);
+        document.removeEventListener('touchend', onPointerUp);
+
+        if (hasMoved) {
+          localStorage.setItem('crop_btn_pos', JSON.stringify({
+            left: btn.style.left,
+            top: btn.style.top
+          }));
+        } else {
+          // Normal click -> trigger crop modal
+          openCropFromCurrentSource();
+        }
+      }
+
+      btn.addEventListener('mousedown', onPointerDown);
+      btn.addEventListener('touchstart', onPointerDown, { passive: false });
+    }
+
+    // Clipboard Paste Listener for instantly attaching screenshot
+    window.addEventListener('paste', (e) => {
+      const modal = document.getElementById('quickAddModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          const input = document.getElementById('snippetImageInput');
+          if (input && file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            showToast('Snippet image attached from clipboard!');
+          }
+          break;
+        }
+      }
+    });
 
     function toggleWorkspaceMobileSidebar() {
       const sidebar = document.getElementById('workspaceRightSidebar');
@@ -1931,6 +2169,10 @@
 
     function closeWorkspaceMobileSidebar() {
       const sidebar = document.getElementById('workspaceRightSidebar');
+      const backdrop = document.getElementById('workspaceMobileBackdrop');
+      sidebar?.classList.add('translate-x-full');
+      backdrop?.classList.add('hidden');
+    }
       const backdrop = document.getElementById('workspaceMobileBackdrop');
       sidebar?.classList.add('translate-x-full');
       backdrop?.classList.add('hidden');
