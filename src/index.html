@@ -11,6 +11,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Supabase Config (loaded from js/supabase-config.js) -->
   <script src="js/supabase-config.js"></script>
+  <!-- PDF.js CDN (Mozilla) for live PDF rendering and cover thumbnail generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (typeof window !== 'undefined' && window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -798,6 +805,173 @@
 
 
   <!-- ======================================================== -->
+  <!-- SOURCE WORKSPACE (Split-view PDF + Notes & Vault)        -->
+  <!-- ======================================================== -->
+  <div id="sourceWorkspaceModal" class="fixed inset-0 z-50 bg-[#1e1e1e] flex flex-col hidden select-text">
+    
+    <!-- Top Workspace Navbar -->
+    <header class="h-13 bg-[#262626] border-b border-[#333333] px-3 sm:px-4 flex items-center justify-between shrink-0 select-none">
+      <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        <button onclick="closeSourceWorkspace()" class="flex items-center space-x-1.5 text-xs text-gray-300 hover:text-white px-2.5 py-1.5 rounded-md hover:bg-[#333333] transition cursor-pointer shrink-0">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span class="hidden sm:inline font-medium">Back to Sources</span>
+        </button>
+
+        <div class="h-4 w-px bg-[#3e3e3e] shrink-0"></div>
+
+        <div class="flex items-center space-x-2 min-w-0">
+          <div class="w-6 h-6 rounded bg-[#333333] flex items-center justify-center text-red-400 shrink-0">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 0012.172 2H7zm6 1.414L17.586 8H13V3.414zM8 12a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm1 2a1 1 0 100 2h3a1 1 0 100-2H9z"/>
+            </svg>
+          </div>
+          <h2 id="workspaceTitle" class="text-xs sm:text-sm font-semibold text-gray-100 truncate max-w-[150px] sm:max-w-xs md:max-w-md">Source Exam Title</h2>
+          <span id="workspaceSubjectBadge" class="hidden sm:inline-block px-2 py-0.5 rounded bg-black/40 text-[10px] font-mono text-gray-300 border border-white/10 shrink-0">#Subject</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 shrink-0">
+        <!-- Open in New Tab Button -->
+        <a id="workspacePdfExternalLink" href="#" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-[#333333] rounded transition cursor-pointer" title="Open file in new tab">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+
+        <!-- Mobile Toggle Button for Vault & Notes Sidebar -->
+        <button onclick="toggleWorkspaceMobileSidebar()" class="md:hidden flex items-center space-x-1.5 px-2.5 py-1 text-xs rounded-md bg-[#333333] text-gray-200 hover:bg-[#3d3d3d] transition cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <span>Vault &amp; Notes</span>
+          <span id="workspaceVaultMobileCount" class="px-1.5 py-0.2 rounded-full bg-red-600 text-white font-bold text-[10px]">0</span>
+        </button>
+
+        <!-- Close Workspace Button -->
+        <button onclick="closeSourceWorkspace()" class="text-gray-400 hover:text-gray-200 p-1.5 rounded-md hover:bg-[#333333] transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Workspace Main Split-View -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+      <!-- ======================================================== -->
+      <!-- CỘT TRÁI (65% width): Trình xem PDF                      -->
+      <!-- ======================================================== -->
+      <section class="w-full md:w-[65%] h-full flex flex-col relative bg-[#181818] border-r border-[#333333] overflow-hidden">
+        
+        <!-- PDF Viewer Container -->
+        <div id="workspacePdfContainer" class="w-full h-full relative flex items-center justify-center">
+          <iframe id="workspacePdfIframe" src="" class="w-full h-full border-0 bg-[#1e1e1e]"></iframe>
+
+          <!-- Fallback if PDF cannot be loaded or is placeholder -->
+          <div id="workspacePdfFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-3 bg-[#181818]">
+            <div class="w-14 h-14 rounded-2xl bg-[#262626] border border-[#383838] flex items-center justify-center text-red-400 shadow-md">
+              <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 0012.172 2H7zm6 1.414L17.586 8H13V3.414zM8 12a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm1 2a1 1 0 100 2h3a1 1 0 100-2H9z"/>
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <h3 id="workspaceFallbackTitle" class="text-sm font-semibold text-gray-200">Exam Document</h3>
+              <p id="workspaceFallbackDesc" class="text-xs text-gray-400 max-w-sm">No live PDF stream attached yet. You can upload an official PDF file for this exam.</p>
+            </div>
+            <button onclick="openQuickAddModal('source')" class="px-3.5 py-1.5 rounded-lg bg-[#2e2e2e] hover:bg-[#383838] border border-[#444444] text-gray-200 text-xs font-medium transition cursor-pointer">
+              Upload PDF File
+            </button>
+          </div>
+        </div>
+
+        <!-- Floating 'Crop Snippet' Button at bottom right of PDF Column -->
+        <div class="absolute bottom-6 right-6 z-20">
+          <button onclick="openCropFromCurrentSource()" class="group flex items-center space-x-2 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 cursor-pointer">
+            <svg class="w-4 h-4 text-white group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+            </svg>
+            <span>Crop Snippet to Vault</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- CỘT PHẢI (35% width): Sidebar 'Vault & Notes'            -->
+      <!-- ======================================================== -->
+      <aside id="workspaceRightSidebar" class="fixed inset-y-0 right-0 z-30 w-full sm:w-[420px] md:static md:w-[35%] h-full flex flex-col bg-[#222222] border-l border-[#333333] transition-transform duration-200 ease-in-out translate-x-full md:translate-x-0 overflow-hidden shadow-2xl md:shadow-none">
+        
+        <!-- Mobile Drawer Header -->
+        <div class="md:hidden flex items-center justify-between p-3.5 border-b border-[#333333] bg-[#262626]">
+          <span class="text-xs font-bold text-gray-200">Vault &amp; Exam Notes</span>
+          <button onclick="toggleWorkspaceMobileSidebar()" class="text-gray-400 hover:text-gray-200 p-1 rounded">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- NỬA TRÊN: Note chung cho cả đề thi -->
+        <div class="p-3.5 border-b border-[#333333] bg-[#242424] flex flex-col space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <h3 class="text-xs font-semibold text-gray-200">Exam Notes &amp; Strategy</h3>
+            </div>
+            <span id="workspaceNoteSaveIndicator" class="text-[10px] text-gray-500 font-mono">Saved</span>
+          </div>
+
+          <textarea 
+            id="workspaceGeneralNotes" 
+            rows="4" 
+            oninput="handleWorkspaceNotesChange()" 
+            placeholder="Write general notes for this exam: overall score goal, difficult sections, timing pacing, common traps..." 
+            class="w-full bg-[#1b1b1b] border border-[#333333] focus:border-gray-500 rounded-lg p-2.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none resize-none leading-relaxed transition"
+          ></textarea>
+
+          <div class="flex items-center justify-between text-[11px] text-gray-500 pt-0.5">
+            <span>Auto-saves as you type</span>
+            <button onclick="saveWorkspaceNotes(true)" class="px-2.5 py-1 rounded bg-[#333333] hover:bg-[#3e3e3e] text-gray-300 hover:text-white text-[11px] font-medium transition cursor-pointer">
+              Save Now
+            </button>
+          </div>
+        </div>
+
+        <!-- NỬA DƯỚI: Danh sách các mini-card câu hỏi trích xuất vào Vault -->
+        <div class="flex-1 flex flex-col min-h-0 bg-[#202020]">
+          
+          <div class="px-3.5 py-2.5 border-b border-[#333333] bg-[#242424] flex items-center justify-between shrink-0">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-semibold text-gray-200">Vault Questions</span>
+              <span id="workspaceVaultBadge" class="px-2 py-0.5 rounded-full bg-black/40 text-[10px] font-mono text-emerald-400 border border-emerald-500/30">0</span>
+            </div>
+            <button onclick="openCropFromCurrentSource()" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center space-x-1 cursor-pointer">
+              <span>+ Add Snippet</span>
+            </button>
+          </div>
+
+          <div id="workspaceProblemsList" class="flex-1 overflow-y-auto p-3 space-y-2.5">
+            <!-- Dynamically populated mini-cards -->
+          </div>
+
+        </div>
+
+      </aside>
+
+      <!-- Mobile Backdrop for Slide-over -->
+      <div id="workspaceMobileBackdrop" onclick="toggleWorkspaceMobileSidebar()" class="fixed inset-0 bg-black/60 z-20 hidden md:hidden"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================== -->
   <!-- TOAST NOTIFICATION COMPONENT                             -->
   <!-- ======================================================== -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 bg-[#282828] border border-gray-600/80 text-gray-200 text-xs px-4 py-2.5 rounded-lg shadow-2xl hidden items-center space-x-2 transition-all">
@@ -1131,6 +1305,9 @@
         renderVaultView();
         updateSidebarCounters();
         populateSnippetSourceDropdown();
+        if (activeWorkspaceSourceId) {
+          renderWorkspaceProblems(activeWorkspaceSourceId);
+        }
 
         // Update settings stats
         const statsElem = document.getElementById('settingsTableStats');
@@ -1374,8 +1551,10 @@
     }
 
     // -------------------------------------------------------------
-    // 5. RENDER: SOURCES GRID VIEW (Google Keep Style)
+    // 5. RENDER: SOURCES GRID VIEW (Google Keep Style + PDF Thumbnails)
     // -------------------------------------------------------------
+    let activeWorkspaceSourceId = null;
+
     function renderSourcesView() {
       const grid = document.getElementById('sourcesGrid');
       if (!grid) return;
@@ -1386,28 +1565,45 @@
           : 'Recently';
         const extracted = s.extracted_count || 0;
         const progressPercent = Math.min(extracted * 10, 100);
+        const hasPdf = s.file_path && s.file_path.toLowerCase().endsWith('.pdf');
+        const cachedThumb = localStorage.getItem('thumb_' + s.id);
+        const thumbUrl = s.thumbnail_url || cachedThumb;
 
         return `
-          <div class="group bg-[#242424] rounded-xl border border-[#333333] hover:border-gray-500 hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col justify-between shadow-xs">
-            <div class="relative h-36 bg-gradient-to-b from-[#2a2a2a] to-[#1c1c1c] border-b border-[#333333] flex flex-col items-center justify-center p-3 overflow-hidden">
-              <div class="absolute inset-0 opacity-10 flex flex-col justify-around p-3 pointer-events-none">
-                <div class="h-1 bg-gray-400 rounded w-3/4"></div>
-                <div class="h-1 bg-gray-400 rounded w-full"></div>
-                <div class="h-1 bg-gray-400 rounded w-5/6"></div>
-              </div>
-              <div class="w-11 h-11 rounded-lg bg-[#2e2e2e] border border-[#444444] flex items-center justify-center text-red-400 shadow-sm z-10 group-hover:scale-105 transition-transform duration-150">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 0012.172 2H7zm6 1.414L17.586 8H13V3.414zM8 12a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm1 2a1 1 0 100 2h3a1 1 0 100-2H9z"/>
-                </svg>
-              </div>
-              <span class="absolute top-2.5 left-2.5 px-1.5 py-0.5 rounded bg-black/60 text-[10px] font-mono text-gray-300 border border-white/10 backdrop-blur-xs">
+          <div onclick="openSourceWorkspace('${s.id}')" class="group bg-[#242424] rounded-xl border border-[#333333] hover:border-gray-500 hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer">
+            
+            <!-- Thumbnail preview area -->
+            <div class="relative h-40 bg-gradient-to-b from-[#2a2a2a] to-[#1c1c1c] border-b border-[#333333] flex flex-col items-center justify-center overflow-hidden">
+              ${thumbUrl ? `
+                <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(s.title)}" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-200">
+              ` : hasPdf ? `
+                <canvas id="pdf-thumb-canvas-${s.id}" class="w-full h-full object-cover object-top hidden group-hover:scale-105 transition-transform duration-200"></canvas>
+                <div id="pdf-thumb-placeholder-${s.id}" class="flex flex-col items-center justify-center p-3 text-center space-y-1.5 pointer-events-none">
+                  <div class="w-10 h-10 rounded-lg bg-[#2e2e2e] border border-[#444444] flex items-center justify-center text-red-400 shadow-xs">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 0012.172 2H7zm6 1.414L17.586 8H13V3.414zM8 12a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm1 2a1 1 0 100 2h3a1 1 0 100-2H9z"/>
+                    </svg>
+                  </div>
+                  <span class="text-[10px] text-gray-500 font-mono">PDF Preview</span>
+                </div>
+              ` : `
+                <div class="w-10 h-10 rounded-lg bg-[#2e2e2e] border border-[#444444] flex items-center justify-center text-red-400">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 0012.172 2H7zm6 1.414L17.586 8H13V3.414zM8 12a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H9a1 1 0 01-1-1zm1 2a1 1 0 100 2h3a1 1 0 100-2H9z"/>
+                  </svg>
+                </div>
+              `}
+
+              <!-- Top badges -->
+              <span class="absolute top-2.5 left-2.5 px-1.5 py-0.5 rounded bg-black/70 text-[10px] font-mono text-gray-300 border border-white/10 backdrop-blur-xs">
                 ${s.subject || 'PDF'}
               </span>
-              <span class="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded bg-black/60 text-[10px] text-gray-400 border border-white/10 backdrop-blur-xs">
-                ${s.file_size || 'Supabase'}
+              <span class="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded bg-black/70 text-[10px] text-gray-400 border border-white/10 backdrop-blur-xs">
+                ${s.file_size || 'Exam'}
               </span>
             </div>
 
+            <!-- Card Body -->
             <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
               <div>
                 <h3 class="text-xs font-semibold text-gray-100 group-hover:text-white transition leading-snug line-clamp-2" title="${escapeHtml(s.title)}">
@@ -1429,16 +1625,23 @@
               </div>
             </div>
 
+            <!-- Card Actions -->
             <div class="px-3 py-2 border-t border-[#333333] bg-[#222222]/50 flex items-center justify-between">
-              <button onclick="openAddSnippetModalForSource('${s.id}')" class="flex items-center space-x-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#333333] px-2 py-1 rounded transition">
+              <button onclick="event.stopPropagation(); openAddSnippetModalForSource('${s.id}')" class="flex items-center space-x-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#333333] px-2 py-1 rounded transition cursor-pointer">
                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
                 </svg>
                 <span>Crop Snippet</span>
               </button>
-              <button onclick="deleteSource('${s.id}')" class="p-1 text-gray-500 hover:text-red-400 transition" title="Delete">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              </button>
+              
+              <div class="flex items-center space-x-1">
+                <button onclick="event.stopPropagation(); openSourceWorkspace('${s.id}')" class="p-1 text-gray-400 hover:text-gray-200 hover:bg-[#333333] rounded transition cursor-pointer" title="Open Split-view Workspace">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                </button>
+                <button onclick="event.stopPropagation(); deleteSource('${s.id}')" class="p-1 text-gray-500 hover:text-red-400 transition cursor-pointer" title="Delete">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -1446,7 +1649,7 @@
 
       // Add "Upload New Source" dropcard
       const addCardHtml = `
-        <div onclick="openQuickAddModal('task')" class="group bg-[#222222]/40 hover:bg-[#262626] rounded-xl border border-dashed border-[#444444] hover:border-gray-400 transition-all duration-150 p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[260px] space-y-3">
+        <div onclick="openQuickAddModal('source')" class="group bg-[#222222]/40 hover:bg-[#262626] rounded-xl border border-dashed border-[#444444] hover:border-gray-400 transition-all duration-150 p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[260px] space-y-3">
           <div class="w-12 h-12 rounded-full bg-[#2a2a2a] group-hover:bg-[#333333] border border-[#3e3e3e] flex items-center justify-center text-gray-400 group-hover:text-gray-200 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -1460,6 +1663,330 @@
       `;
 
       grid.innerHTML = cardsHtml + addCardHtml;
+
+      // Asynchronously render dynamic thumbnails for PDFs without a saved thumbnail
+      setTimeout(() => {
+        renderDynamicPdfThumbnails();
+      }, 50);
+    }
+
+    // -------------------------------------------------------------
+    // 5B. DYNAMIC PDF THUMBNAILS (pdf.js background renderer)
+    // -------------------------------------------------------------
+    async function renderDynamicPdfThumbnails() {
+      if (!window.pdfjsLib) return;
+
+      for (const s of currentSources) {
+        if (s.thumbnail_url) continue;
+        if (!s.file_path || !s.file_path.toLowerCase().endsWith('.pdf')) continue;
+
+        const canvas = document.getElementById(`pdf-thumb-canvas-${s.id}`);
+        const placeholder = document.getElementById(`pdf-thumb-placeholder-${s.id}`);
+        if (!canvas) continue;
+
+        // Check localStorage cache first
+        const cachedThumb = localStorage.getItem('thumb_' + s.id);
+        if (cachedThumb) {
+          if (placeholder) placeholder.classList.add('hidden');
+          const img = document.createElement('img');
+          img.src = cachedThumb;
+          img.className = 'w-full h-full object-cover object-top';
+          canvas.parentNode.appendChild(img);
+          continue;
+        }
+
+        try {
+          const pdfUrl = getSourceFileUrl(s.file_path);
+          const loadingTask = pdfjsLib.getDocument({
+            url: pdfUrl,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+          const pdfDoc = await loadingTask.promise;
+          const page = await pdfDoc.getPage(1);
+          const unscaled = page.getViewport({ scale: 1 });
+          const targetWidth = 400;
+          const scale = targetWidth / unscaled.width;
+          const viewport = page.getViewport({ scale: scale });
+
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          canvas.classList.remove('hidden');
+          if (placeholder) placeholder.classList.add('hidden');
+
+          const thumbDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          localStorage.setItem('thumb_' + s.id, thumbDataUrl);
+        } catch (err) {
+          console.warn(`Could not render thumbnail for source ${s.id}:`, err);
+        }
+      }
+    }
+
+    function getSourceFileUrl(filePath) {
+      if (!filePath) return '';
+      if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        return filePath;
+      }
+      const baseUrl = window.SUPABASE_URL || 'https://zjgldhqggxnsnvxbdgcv.supabase.co';
+      const cleanBase = baseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+      return `${cleanBase}/storage/v1/object/public/sources/${encodeURIComponent(filePath)}`;
+    }
+
+    async function generateThumbnailFromPdfFile(file) {
+      if (!window.pdfjsLib) return null;
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({
+          data: arrayBuffer,
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true
+        });
+        const pdfDoc = await loadingTask.promise;
+        const page = await pdfDoc.getPage(1);
+        const unscaled = page.getViewport({ scale: 1 });
+        const targetWidth = 480;
+        const scale = targetWidth / unscaled.width;
+        const viewport = page.getViewport({ scale: scale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => {
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            resolve({ blob, dataUrl });
+          }, 'image/jpeg', 0.82);
+        });
+      } catch (err) {
+        console.warn('PDF thumbnail generation failed during upload:', err);
+        return null;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 5C. SOURCE WORKSPACE LOGIC (Split-View PDF + Notes & Vault)
+    // -------------------------------------------------------------
+    function openSourceWorkspace(sourceId) {
+      const source = currentSources.find(s => s.id === sourceId);
+      if (!source) return;
+
+      activeWorkspaceSourceId = sourceId;
+      const modal = document.getElementById('sourceWorkspaceModal');
+      const title = document.getElementById('workspaceTitle');
+      const subject = document.getElementById('workspaceSubjectBadge');
+      const externalLink = document.getElementById('workspacePdfExternalLink');
+      const iframe = document.getElementById('workspacePdfIframe');
+      const fallback = document.getElementById('workspacePdfFallback');
+      const fallbackTitle = document.getElementById('workspaceFallbackTitle');
+      const notesArea = document.getElementById('workspaceGeneralNotes');
+      const noteIndicator = document.getElementById('workspaceNoteSaveIndicator');
+
+      if (title) title.textContent = source.title;
+      if (subject) subject.textContent = `#${source.subject || 'General'}`;
+
+      // Notes area
+      const cachedNotes = localStorage.getItem('notes_' + source.id) || source.notes || '';
+      if (notesArea) notesArea.value = cachedNotes;
+      if (noteIndicator) {
+        noteIndicator.textContent = cachedNotes ? 'Saved' : 'Ready';
+        noteIndicator.className = 'text-[10px] text-gray-500 font-mono';
+      }
+
+      // PDF Viewer
+      if (source.file_path && source.file_path.toLowerCase().endsWith('.pdf')) {
+        const pdfUrl = getSourceFileUrl(source.file_path);
+        if (iframe) {
+          iframe.src = pdfUrl;
+          iframe.classList.remove('hidden');
+        }
+        if (fallback) fallback.classList.add('hidden');
+        if (externalLink) {
+          externalLink.href = pdfUrl;
+          externalLink.classList.remove('hidden');
+        }
+      } else {
+        if (iframe) {
+          iframe.src = '';
+          iframe.classList.add('hidden');
+        }
+        if (fallback) {
+          fallback.classList.remove('hidden');
+          if (fallbackTitle) fallbackTitle.textContent = source.title;
+        }
+        if (externalLink) externalLink.classList.add('hidden');
+      }
+
+      // Populate mini-cards in right sidebar
+      renderWorkspaceProblems(source.id);
+
+      // Show Workspace Modal
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+    }
+
+    function closeSourceWorkspace() {
+      const modal = document.getElementById('sourceWorkspaceModal');
+      const iframe = document.getElementById('workspacePdfIframe');
+      if (modal) modal.classList.add('hidden');
+      if (iframe) iframe.src = '';
+      activeWorkspaceSourceId = null;
+      document.body.classList.remove('overflow-hidden');
+      closeWorkspaceMobileSidebar();
+    }
+
+    function renderWorkspaceProblems(sourceId) {
+      const list = document.getElementById('workspaceProblemsList');
+      const badge = document.getElementById('workspaceVaultBadge');
+      const badgeMobile = document.getElementById('workspaceVaultMobileCount');
+      if (!list) return;
+
+      const sourceProblems = currentProblems.filter(p => p.source_id === sourceId);
+      const count = sourceProblems.length;
+
+      if (badge) badge.textContent = count;
+      if (badgeMobile) badgeMobile.textContent = count;
+
+      if (count === 0) {
+        list.innerHTML = `
+          <div class="py-12 text-center text-xs text-gray-500 space-y-2">
+            <div class="w-10 h-10 rounded-full bg-[#282828] mx-auto flex items-center justify-center text-gray-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <div>No questions extracted from this exam yet.</div>
+            <button onclick="openCropFromCurrentSource()" class="text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer">+ Crop Snippet to Vault</button>
+          </div>
+        `;
+        return;
+      }
+
+      const currentSource = currentSources.find(s => s.id === sourceId);
+      const sourceTitle = currentSource ? currentSource.title : 'Study Exam';
+
+      list.innerHTML = sourceProblems.map(p => {
+        const tags = Array.isArray(p.tags) ? p.tags : [];
+        return `
+          <div class="bg-[#262626] rounded-lg border border-[#383838] hover:border-gray-500 p-3 space-y-2.5 transition shadow-xs">
+            ${p.image_path ? `
+              <div class="h-28 bg-[#181818] rounded border border-[#333333] flex items-center justify-center overflow-hidden">
+                <img src="${escapeHtml(p.image_path)}" alt="Snippet" class="max-h-full object-contain">
+              </div>
+            ` : ''}
+
+            <div class="flex flex-wrap gap-1 text-[10px]">
+              ${tags.map(t => `<span class="px-1.5 py-0.5 bg-[#333333] text-gray-300 rounded font-mono">#${escapeHtml(t)}</span>`).join('')}
+            </div>
+
+            ${p.note_text ? `
+              <p class="text-[11px] text-gray-300 bg-[#1e1e1e] border-l-2 border-emerald-500 p-2 rounded-r leading-relaxed">
+                ${escapeHtml(p.note_text)}
+              </p>
+            ` : ''}
+
+            <div class="flex items-center justify-between pt-1 border-t border-[#333333] text-[10px] text-gray-500">
+              <span class="font-mono">${p.anki_exported ? 'Synced to Anki' : 'Vault Ready'}</span>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded cursor-pointer" title="Preview Anki Card">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </button>
+                <button onclick="deleteProblem('${p.id}')" class="p-1 hover:text-red-400 text-gray-500 transition cursor-pointer" title="Delete Snippet">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openCropFromCurrentSource() {
+      if (!activeWorkspaceSourceId) return;
+      openQuickAddModal('vault');
+      const select = document.getElementById('snippetSourceSelect');
+      if (select) select.value = activeWorkspaceSourceId;
+    }
+
+    function toggleWorkspaceMobileSidebar() {
+      const sidebar = document.getElementById('workspaceRightSidebar');
+      const backdrop = document.getElementById('workspaceMobileBackdrop');
+      if (!sidebar) return;
+      const isClosed = sidebar.classList.contains('translate-x-full');
+      if (isClosed) {
+        sidebar.classList.remove('translate-x-full');
+        backdrop?.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('translate-x-full');
+        backdrop?.classList.add('hidden');
+      }
+    }
+
+    function closeWorkspaceMobileSidebar() {
+      const sidebar = document.getElementById('workspaceRightSidebar');
+      const backdrop = document.getElementById('workspaceMobileBackdrop');
+      sidebar?.classList.add('translate-x-full');
+      backdrop?.classList.add('hidden');
+    }
+
+    let _notesSaveTimeout = null;
+    function handleWorkspaceNotesChange() {
+      const indicator = document.getElementById('workspaceNoteSaveIndicator');
+      if (indicator) {
+        indicator.textContent = 'Typing...';
+        indicator.className = 'text-[10px] text-amber-400 font-mono';
+      }
+      clearTimeout(_notesSaveTimeout);
+      _notesSaveTimeout = setTimeout(() => {
+        saveWorkspaceNotes(false);
+      }, 1000);
+    }
+
+    async function saveWorkspaceNotes(showToastMsg = false) {
+      if (!activeWorkspaceSourceId) return;
+      const noteVal = document.getElementById('workspaceGeneralNotes').value;
+      const indicator = document.getElementById('workspaceNoteSaveIndicator');
+
+      localStorage.setItem('notes_' + activeWorkspaceSourceId, noteVal);
+
+      const target = currentSources.find(s => s.id === activeWorkspaceSourceId);
+      if (target) target.notes = noteVal;
+
+      if (indicator) {
+        indicator.textContent = 'Saving...';
+        indicator.className = 'text-[10px] text-gray-400 font-mono';
+      }
+
+      try {
+        if (supabase) {
+          const { error } = await supabase
+            .from('sources')
+            .update({ notes: noteVal })
+            .eq('id', activeWorkspaceSourceId);
+
+          if (error && error.message && error.message.includes('notes')) {
+            console.warn('Note: sources.notes column not yet in Supabase schema.');
+          }
+        }
+        if (indicator) {
+          indicator.textContent = 'Saved to Cloud';
+          indicator.className = 'text-[10px] text-emerald-400 font-mono';
+        }
+        if (showToastMsg) showToast('Exam notes saved!');
+      } catch (err) {
+        console.warn('Save notes err:', err);
+        if (indicator) {
+          indicator.textContent = 'Saved locally';
+          indicator.className = 'text-[10px] text-gray-400 font-mono';
+        }
+      }
     }
 
     // -------------------------------------------------------------
@@ -1647,6 +2174,7 @@
       try {
         let filePath = null;
         let fileSizeStr = null;
+        let thumbnailUrl = null;
 
         // Upload file to Supabase Storage if selected
         if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -1654,6 +2182,30 @@
           fileSizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
           const cleanName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
 
+          // Generate Thumbnail if PDF
+          if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+            btn.textContent = 'Rendering Thumbnail...';
+            const thumbResult = await generateThumbnailFromPdfFile(file);
+            if (thumbResult) {
+              thumbnailUrl = thumbResult.dataUrl;
+              if (thumbResult.blob && supabase) {
+                try {
+                  const thumbName = 'thumb_' + cleanName.replace(/\.pdf$/i, '') + '.jpg';
+                  const { error: thumbErr } = await supabase.storage
+                    .from('sources')
+                    .upload(thumbName, thumbResult.blob, { contentType: 'image/jpeg', upsert: true });
+                  if (!thumbErr) {
+                    const { data: pubData } = supabase.storage.from('sources').getPublicUrl(thumbName);
+                    if (pubData && pubData.publicUrl) thumbnailUrl = pubData.publicUrl;
+                  }
+                } catch (thErr) {
+                  console.warn('Thumbnail storage upload non-fatal:', thErr);
+                }
+              }
+            }
+          }
+
+          btn.textContent = 'Uploading File...';
           try {
             const { data: uploadData, error: upErr } = await supabase.storage
               .from('sources')
@@ -1675,11 +2227,26 @@
           status: 'pending'
         };
 
-        const { error } = await supabase.from('sources').insert([payload]);
-        if (error) throw error;
+        if (thumbnailUrl) {
+          payload.thumbnail_url = thumbnailUrl;
+        }
+
+        let { data: newSource, error } = await supabase.from('sources').insert([payload]).select().single();
+        if (error && error.message && error.message.includes('thumbnail_url')) {
+          delete payload.thumbnail_url;
+          const retry = await supabase.from('sources').insert([payload]).select().single();
+          if (retry.error) throw retry.error;
+          newSource = retry.data;
+        } else if (error) {
+          throw error;
+        }
+
+        if (newSource && thumbnailUrl) {
+          localStorage.setItem('thumb_' + newSource.id, thumbnailUrl);
+        }
 
         closeQuickAddModal();
-        showToast('Task added to Supabase successfully!');
+        showToast('Source added successfully!');
         document.getElementById('taskTitleInput').value = '';
         if (fileInput) fileInput.value = '';
         await loadAllData();

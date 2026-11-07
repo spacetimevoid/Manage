@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS public.sources (
     due_date TIMESTAMPTZ,                   -- Assignment deadline or scheduled exam date
     file_size TEXT,                         -- Formatted size, e.g. '4.2 MB'
     extracted_count INT DEFAULT 0,          -- Count of snippets extracted into Problem Vault
+    thumbnail_url TEXT,                     -- Cover thumbnail rendered from PDF page 1 via pdf.js
+    notes TEXT,                             -- General study notes & strategy for this exam
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -128,4 +130,12 @@ CREATE POLICY "Allow public upload on problem_snippets bucket"
 ON storage.objects FOR INSERT
 TO anon, authenticated
 WITH CHECK (bucket_id = 'problem_snippets');
+
+-- ==============================================================================
+-- MIGRATION SCRIPT (For existing databases)
+-- Run this if the 'sources' table was created previously without thumbnail_url or notes:
+-- ==============================================================================
+ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
+ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS notes TEXT;
+
 

@@ -5,8 +5,10 @@
 // Lấy tại: Supabase Dashboard -> Project Settings -> API.
 // =============================================================================
 
-const SUPABASE_URL = ''; // <-- Dòng 8: Dán Supabase Project URL vào đây
-const SUPABASE_ANON_KEY = ''; // <-- Dòng 9: Dán Supabase Anon Key vào đây
+// Clean URL (bỏ /rest/v1/ nếu người dùng vô tình dán thừa)
+const rawUrl = 'https://zjgldhqggxnsnvxbdgcv.supabase.co';
+const SUPABASE_URL = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZ2xkaHFnZ3huc252eGJkZ2N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwMjUyNDgsImV4cCI6MjEwOTYwMTI0OH0.ricjQE5t9Kq1nMc43Pbvw4XsqqgPkwb-br1lJ5w5In8';
 
 // Khởi tạo Supabase client toàn cục qua CDN (@supabase/supabase-js)
 let supabaseClient = null;
