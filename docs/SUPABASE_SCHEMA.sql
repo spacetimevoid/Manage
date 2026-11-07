@@ -128,3 +128,4 @@ CREATE POLICY "Allow public upload on problem_snippets bucket"
 ON storage.objects FOR INSERT
 TO anon, authenticated
 WITH CHECK (bucket_id = 'problem_snippets');
+
