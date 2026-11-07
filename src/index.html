@@ -791,11 +791,48 @@
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-gray-300 font-medium">Upload Cropped Snippet Image:</label>
-            <span class="text-[10px] text-gray-400 font-mono">Tip: Press Cmd+V to paste screenshot</span>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-gray-300 font-medium">Question Snippet Image: <span class="text-red-400">*</span></label>
+            <span class="text-[10px] text-gray-400 font-mono">Cmd+V to paste</span>
           </div>
-          <input type="file" id="snippetImageInput" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#333] file:text-gray-200 hover:file:bg-[#3e3e3e] cursor-pointer">
+
+          <!-- Direct In-Browser Screenshot Button -->
+          <button 
+            type="button" 
+            onclick="startScreenCrop()" 
+            class="w-full py-2 px-3 rounded-lg bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 hover:text-white font-medium text-xs flex items-center justify-center space-x-2 transition mb-2 cursor-pointer shadow-sm group"
+          >
+            <svg class="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="6" cy="6" r="3"></circle>
+              <circle cx="6" cy="18" r="3"></circle>
+              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            <span class="font-semibold">Take Screenshot &amp; Crop (Chụp màn hình trực tiếp)</span>
+          </button>
+
+          <!-- Snippet Image Preview Card (shown when an image is attached) -->
+          <div id="snippetImagePreviewCard" class="hidden mb-2 p-2.5 bg-[#262626] border border-[#3a3a3a] rounded-lg">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] text-emerald-400 font-medium flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>Image Attached</span>
+              </span>
+              <button type="button" onclick="clearSnippetImagePreview()" class="text-[11px] text-gray-400 hover:text-red-400 transition cursor-pointer">
+                Remove
+              </button>
+            </div>
+            <div class="relative w-full max-h-36 overflow-hidden rounded bg-[#1e1e1e] border border-[#333] flex items-center justify-center">
+              <img id="snippetImagePreviewImg" src="" alt="Snippet Preview" class="max-h-36 object-contain w-auto mx-auto rounded">
+            </div>
+            <div id="snippetImageFileInfo" class="mt-1 text-[10px] text-gray-400 font-mono truncate"></div>
+          </div>
+
+          <!-- Fallback File Input -->
+          <div id="snippetFileInputContainer">
+            <input type="file" id="snippetImageInput" accept="image/*" onchange="handleSnippetFileInputChange(this)" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#333] file:text-gray-200 hover:file:bg-[#3e3e3e] cursor-pointer">
+          </div>
         </div>
 
         <div class="flex justify-end space-x-2 pt-2 border-t border-[#333333]">
@@ -890,23 +927,6 @@
           </div>
         </div>
 
-        <!-- Draggable Scissors Floating Action Button -->
-        <div 
-          id="draggableCropBtn" 
-          style="position: absolute; right: 24px; bottom: 24px; z-index: 35; touch-action: none;" 
-          class="w-12 h-12 rounded-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none transition-transform hover:scale-105" 
-          title="Drag to reposition • Click to Crop Snippet"
-        >
-          <!-- Scissors Icon -->
-          <svg class="w-5 h-5 text-white pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="6" cy="6" r="3"></circle>
-            <circle cx="6" cy="18" r="3"></circle>
-            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-          </svg>
-        </div>
-
       </section>
 
       <!-- ======================================================== -->
@@ -983,6 +1003,79 @@
       <!-- Mobile Backdrop for Slide-over -->
       <div id="workspaceMobileBackdrop" onclick="toggleWorkspaceMobileSidebar()" class="fixed inset-0 bg-black/60 z-20 hidden md:hidden"></div>
 
+      <!-- Draggable Scissors Floating Action Button -->
+      <!-- Placed directly in workspaceSplitContainer with z-40 so splitter/sidebar NEVER covers it! -->
+      <div 
+        id="draggableCropBtn" 
+        style="position: absolute; right: calc(35% + 24px); bottom: 24px; z-index: 40; touch-action: none;" 
+        class="w-12 h-12 rounded-full bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none transition-transform hover:scale-105" 
+        title="Drag to reposition • Click to Take Screenshot &amp; Crop"
+      >
+        <!-- Scissors Icon -->
+        <svg class="w-5 h-5 text-white pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+          <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+          <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+        </svg>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- IN-APP SCREENSHOT SNIPPING OVERLAY TOOL                  -->
+  <!-- ======================================================== -->
+  <div id="snippingToolOverlay" class="fixed inset-0 z-[90] bg-black/90 flex flex-col hidden select-none cursor-crosshair">
+    
+    <!-- Top Floating Toolbar / Instructions -->
+    <div class="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-3 px-4 py-2 bg-[#222222]/95 border border-gray-700/80 rounded-full shadow-2xl backdrop-blur-md">
+      <div class="flex items-center space-x-2 text-xs text-gray-200 font-medium">
+        <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="6" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+          <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+          <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+        </svg>
+        <span>Click &amp; drag over question snippet</span>
+      </div>
+      <div class="h-3 w-px bg-gray-600"></div>
+      <span class="text-[11px] text-gray-400 font-mono">Esc to Cancel</span>
+      <button onclick="cancelSnipping()" class="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition" title="Cancel Snipping">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Canvas Container -->
+    <div id="snipCanvasWrapper" class="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <!-- Background captured image -->
+      <canvas id="snipBgCanvas" class="max-w-full max-h-full block shadow-2xl"></canvas>
+
+      <!-- Interactive Selection Box -->
+      <div id="snipSelectionBox" class="absolute hidden border-2 border-dashed border-red-500 pointer-events-none" style="box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);">
+        <!-- Dimension Badge -->
+        <div id="snipDimensionsBadge" class="absolute -top-6 left-0 px-1.5 py-0.5 bg-red-600 text-[10px] font-mono text-white rounded shadow font-semibold whitespace-nowrap"></div>
+
+        <!-- Floating Confirm Actions (clickable) -->
+        <div id="snipActionToolbar" class="absolute -bottom-11 right-0 pointer-events-auto flex items-center space-x-1.5 bg-[#1f1f1f] border border-gray-700 px-2 py-1 rounded-lg shadow-xl whitespace-nowrap">
+          <button id="snipConfirmBtn" type="button" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium flex items-center space-x-1 transition shadow cursor-pointer">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span>Save Snippet</span>
+          </button>
+          <button id="snipResetBtn" type="button" class="px-2 py-1 bg-[#333333] hover:bg-[#444444] text-gray-300 rounded text-xs transition cursor-pointer" title="Redo selection">
+            <span>Redo</span>
+          </button>
+          <button onclick="cancelSnipping()" type="button" class="px-2 py-1 bg-[#333333] hover:bg-red-900/60 text-gray-400 hover:text-red-300 rounded text-xs transition cursor-pointer" title="Cancel">
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1273,6 +1366,9 @@
 
       // Build upcoming week date picker
       renderDatePickerStrip(now);
+
+      // Initialize In-Browser Snipping Events
+      initSnippingEvents();
 
       // Listen to Auth State Changes
       if (window.supabaseClient && window.supabaseClient.auth) {
@@ -1949,6 +2045,33 @@
     // -------------------------------------------------------------
     // 5D. DRAGGABLE RESIZABLE SPLITTER (Between PDF & Notes)
     // -------------------------------------------------------------
+    function keepCropBtnInBounds() {
+      const btn = document.getElementById('draggableCropBtn');
+      const container = document.getElementById('workspaceSplitContainer');
+      if (!btn || !container) return;
+
+      const containerRect = container.getBoundingClientRect();
+      if (containerRect.width <= 0 || containerRect.height <= 0) return;
+
+      const btnWidth = btn.offsetWidth || 48;
+      const btnHeight = btn.offsetHeight || 48;
+
+      const maxLeft = containerRect.width - btnWidth - 12;
+      const maxTop = containerRect.height - btnHeight - 12;
+
+      let curLeft = btn.offsetLeft;
+      let curTop = btn.offsetTop;
+
+      if (curLeft > maxLeft || curLeft < 12 || curTop > maxTop || curTop < 12) {
+        const newLeft = Math.max(12, Math.min(maxLeft, curLeft));
+        const newTop = Math.max(12, Math.min(maxTop, curTop));
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+      }
+    }
+
     function initWorkspaceSplitter() {
       const splitter = document.getElementById('workspaceSplitter');
       const leftCol = document.getElementById('workspaceLeftColumn');
@@ -1959,6 +2082,8 @@
 
       if (splitter._initialized) return;
       splitter._initialized = true;
+
+      window.addEventListener('resize', keepCropBtnInBounds);
 
       // Restore saved percentage
       const savedPct = localStorage.getItem('workspace_split_pct');
@@ -1995,6 +2120,9 @@
 
         leftCol.style.width = pct + '%';
         rightCol.style.width = (100 - pct) + '%';
+
+        // Keep scissors button in visible area and above splitter
+        keepCropBtnInBounds();
       }
 
       function onMouseUp() {
@@ -2012,6 +2140,7 @@
         if (!isNaN(currentPct)) {
           localStorage.setItem('workspace_split_pct', currentPct);
         }
+        keepCropBtnInBounds();
       }
 
       splitter.addEventListener('mousedown', onMouseDown);
@@ -2022,22 +2151,34 @@
     // -------------------------------------------------------------
     function initDraggableCropBtn() {
       const btn = document.getElementById('draggableCropBtn');
-      const container = document.getElementById('workspaceLeftColumn');
+      const container = document.getElementById('workspaceSplitContainer');
       const iframe = document.getElementById('workspacePdfIframe');
       if (!btn || !container) return;
 
-      // Restore saved position
+      // Position button within workspaceSplitContainer
       const savedPos = localStorage.getItem('crop_btn_pos');
       if (savedPos) {
         try {
           const pos = JSON.parse(savedPos);
-          if (pos && pos.left && pos.top) {
-            btn.style.left = pos.left;
-            btn.style.top = pos.top;
+          if (pos && typeof pos.left === 'number' && typeof pos.top === 'number') {
+            const containerRect = container.getBoundingClientRect();
+            const maxLeft = Math.max(10, containerRect.width - 56);
+            const maxTop = Math.max(10, containerRect.height - 56);
+            btn.style.left = Math.max(10, Math.min(maxLeft, pos.left)) + 'px';
+            btn.style.top = Math.max(10, Math.min(maxTop, pos.top)) + 'px';
             btn.style.right = 'auto';
             btn.style.bottom = 'auto';
           }
         } catch {}
+      } else {
+        // Default position: floating 24px left of splitter and 24px from bottom
+        const leftCol = document.getElementById('workspaceLeftColumn');
+        const containerRect = container.getBoundingClientRect();
+        const leftColWidth = leftCol ? leftCol.offsetWidth : (containerRect.width * 0.65);
+        btn.style.left = Math.max(16, leftColWidth - 68) + 'px';
+        btn.style.top = Math.max(16, containerRect.height - 68) + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
       }
 
       if (btn._initialized) return;
@@ -2058,11 +2199,8 @@
         startX = clientX;
         startY = clientY;
 
-        const rect = btn.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-
-        origX = rect.left - containerRect.left;
-        origY = rect.top - containerRect.top;
+        origX = btn.offsetLeft;
+        origY = btn.offsetTop;
 
         if (iframe) iframe.style.pointerEvents = 'none';
 
@@ -2085,18 +2223,18 @@
         }
 
         if (!hasMoved) return;
-
         if (e.cancelable) e.preventDefault();
 
         const containerRect = container.getBoundingClientRect();
-        const btnRect = btn.getBoundingClientRect();
+        const btnWidth = btn.offsetWidth || 48;
+        const btnHeight = btn.offsetHeight || 48;
 
         let newX = origX + dx;
         let newY = origY + dy;
 
-        // Keep inside bounds
-        newX = Math.max(10, Math.min(containerRect.width - btnRect.width - 10, newX));
-        newY = Math.max(10, Math.min(containerRect.height - btnRect.height - 10, newY));
+        // Keep inside bounds of the workspace split container
+        newX = Math.max(8, Math.min(containerRect.width - btnWidth - 8, newX));
+        newY = Math.max(8, Math.min(containerRect.height - btnHeight - 8, newY));
 
         btn.style.left = newX + 'px';
         btn.style.top = newY + 'px';
@@ -2117,17 +2255,337 @@
 
         if (hasMoved) {
           localStorage.setItem('crop_btn_pos', JSON.stringify({
-            left: btn.style.left,
-            top: btn.style.top
+            left: parseInt(btn.style.left, 10),
+            top: parseInt(btn.style.top, 10)
           }));
         } else {
-          // Normal click -> trigger crop modal
-          openCropFromCurrentSource();
+          // Normal click -> Directly trigger in-browser screen crop
+          startScreenCrop();
         }
       }
 
       btn.addEventListener('mousedown', onPointerDown);
       btn.addEventListener('touchstart', onPointerDown, { passive: false });
+    }
+
+    // -------------------------------------------------------------
+    // 5F. IN-BROWSER SCREENSHOT & DIRECT SNIPPING TOOL
+    // -------------------------------------------------------------
+    let _rawCaptureCanvas = null;
+    let _snipRect = { startX: 0, startY: 0, curX: 0, curY: 0, isDrawing: false, hasSelection: false };
+
+    async function startScreenCrop() {
+      // Ensure target source is established
+      if (!activeWorkspaceSourceId) {
+        const select = document.getElementById('snippetSourceSelect');
+        if (select && select.value) {
+          activeWorkspaceSourceId = select.value;
+        } else if (currentSources.length > 0) {
+          activeWorkspaceSourceId = currentSources[0].id;
+        }
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        showToast('Direct screen capture is not supported on this browser. Use Cmd+V to paste.', 4000);
+        openCropFromCurrentSource();
+        return;
+      }
+
+      try {
+        showToast('Select "This Tab" or "Window" to capture screenshot...', 3000);
+
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            displaySurface: 'browser'
+          },
+          audio: false,
+          preferCurrentTab: true
+        });
+
+        const track = stream.getVideoTracks()[0];
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = () => {
+            video.play().then(resolve).catch(reject);
+          };
+          video.onerror = reject;
+        });
+
+        // Short tick for video frame to render
+        await new Promise(r => setTimeout(r, 120));
+
+        const rawCanvas = document.createElement('canvas');
+        rawCanvas.width = video.videoWidth || window.innerWidth;
+        rawCanvas.height = video.videoHeight || window.innerHeight;
+        const ctx = rawCanvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, rawCanvas.width, rawCanvas.height);
+
+        // Stop media stream tracks immediately so sharing indicator stops
+        track.stop();
+        stream.getTracks().forEach(t => t.stop());
+
+        // Open interactive snipping overlay
+        openSnippingTool(rawCanvas);
+
+      } catch (err) {
+        if (err.name === 'NotAllowedError') {
+          // User dismissed or cancelled the prompt
+          return;
+        }
+        console.error('Screen capture error:', err);
+        showToast('Screen capture cancelled or failed: ' + (err.message || err));
+      }
+    }
+
+    function openSnippingTool(rawCanvas) {
+      _rawCaptureCanvas = rawCanvas;
+
+      const overlay = document.getElementById('snippingToolOverlay');
+      const bgCanvas = document.getElementById('snipBgCanvas');
+      const box = document.getElementById('snipSelectionBox');
+      const actionToolbar = document.getElementById('snipActionToolbar');
+      if (!overlay || !bgCanvas || !box) return;
+
+      bgCanvas.width = rawCanvas.width;
+      bgCanvas.height = rawCanvas.height;
+      const ctx = bgCanvas.getContext('2d');
+      ctx.drawImage(rawCanvas, 0, 0);
+
+      box.classList.add('hidden');
+      if (actionToolbar) actionToolbar.classList.add('hidden');
+      _snipRect = { startX: 0, startY: 0, curX: 0, curY: 0, isDrawing: false, hasSelection: false };
+
+      overlay.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+
+      window.addEventListener('keydown', handleSnippingKeydown);
+    }
+
+    function handleSnippingKeydown(e) {
+      const overlay = document.getElementById('snippingToolOverlay');
+      if (!overlay || overlay.classList.contains('hidden')) return;
+
+      if (e.key === 'Escape') {
+        cancelSnipping();
+      } else if (e.key === 'Enter') {
+        if (_snipRect.hasSelection) {
+          confirmSnipping();
+        }
+      }
+    }
+
+    function cancelSnipping() {
+      const overlay = document.getElementById('snippingToolOverlay');
+      if (overlay) overlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      window.removeEventListener('keydown', handleSnippingKeydown);
+      _rawCaptureCanvas = null;
+      _snipRect.isDrawing = false;
+      _snipRect.hasSelection = false;
+    }
+
+    function initSnippingEvents() {
+      const wrapper = document.getElementById('snipCanvasWrapper');
+      const bgCanvas = document.getElementById('snipBgCanvas');
+      const box = document.getElementById('snipSelectionBox');
+      const actionToolbar = document.getElementById('snipActionToolbar');
+      const dimensionsBadge = document.getElementById('snipDimensionsBadge');
+      const confirmBtn = document.getElementById('snipConfirmBtn');
+      const resetBtn = document.getElementById('snipResetBtn');
+
+      if (!wrapper || !bgCanvas || !box) return;
+
+      function getCoords(e) {
+        const rect = bgCanvas.getBoundingClientRect();
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+        const x = Math.max(rect.left, Math.min(rect.right, clientX));
+        const y = Math.max(rect.top, Math.min(rect.bottom, clientY));
+
+        return { x, y, rect };
+      }
+
+      function onDown(e) {
+        if (e.target.closest('#snipActionToolbar')) return;
+        if (e.type === 'mousedown' && e.button !== 0) return;
+
+        const { x, y, rect } = getCoords(e);
+        _snipRect.isDrawing = true;
+        _snipRect.hasSelection = false;
+        _snipRect.startX = x;
+        _snipRect.startY = y;
+        _snipRect.curX = x;
+        _snipRect.curY = y;
+
+        box.classList.remove('hidden');
+        if (actionToolbar) actionToolbar.classList.add('hidden');
+        renderBox(rect);
+      }
+
+      function onMove(e) {
+        if (!_snipRect.isDrawing) return;
+        if (e.cancelable) e.preventDefault();
+
+        const { x, y, rect } = getCoords(e);
+        _snipRect.curX = x;
+        _snipRect.curY = y;
+        renderBox(rect);
+      }
+
+      function onUp() {
+        if (!_snipRect.isDrawing) return;
+        _snipRect.isDrawing = false;
+
+        const w = Math.abs(_snipRect.curX - _snipRect.startX);
+        const h = Math.abs(_snipRect.curY - _snipRect.startY);
+
+        if (w >= 12 && h >= 12) {
+          _snipRect.hasSelection = true;
+          if (actionToolbar) {
+            actionToolbar.classList.remove('hidden');
+            const boxRect = box.getBoundingClientRect();
+            if (boxRect.bottom + 50 > window.innerHeight) {
+              actionToolbar.style.bottom = '8px';
+            } else {
+              actionToolbar.style.bottom = '-44px';
+            }
+          }
+        } else {
+          box.classList.add('hidden');
+          if (actionToolbar) actionToolbar.classList.add('hidden');
+          _snipRect.hasSelection = false;
+        }
+      }
+
+      function renderBox(canvasRect) {
+        const left = Math.min(_snipRect.startX, _snipRect.curX);
+        const top = Math.min(_snipRect.startY, _snipRect.curY);
+        const width = Math.abs(_snipRect.curX - _snipRect.startX);
+        const height = Math.abs(_snipRect.curY - _snipRect.startY);
+
+        box.style.left = left + 'px';
+        box.style.top = top + 'px';
+        box.style.width = width + 'px';
+        box.style.height = height + 'px';
+
+        if (dimensionsBadge && _rawCaptureCanvas) {
+          const scaleX = _rawCaptureCanvas.width / canvasRect.width;
+          const scaleY = _rawCaptureCanvas.height / canvasRect.height;
+          const actualW = Math.round(width * scaleX);
+          const actualH = Math.round(height * scaleY);
+          dimensionsBadge.textContent = `${actualW} × ${actualH} px`;
+        }
+      }
+
+      wrapper.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+
+      wrapper.addEventListener('touchstart', onDown, { passive: false });
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onUp);
+
+      if (confirmBtn) confirmBtn.addEventListener('click', confirmSnipping);
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          box.classList.add('hidden');
+          if (actionToolbar) actionToolbar.classList.add('hidden');
+          _snipRect.hasSelection = false;
+        });
+      }
+    }
+
+    function confirmSnipping() {
+      if (!_rawCaptureCanvas) return;
+      const bgCanvas = document.getElementById('snipBgCanvas');
+      const box = document.getElementById('snipSelectionBox');
+      if (!bgCanvas || !box) return;
+
+      const canvasRect = bgCanvas.getBoundingClientRect();
+      const left = Math.min(_snipRect.startX, _snipRect.curX);
+      const top = Math.min(_snipRect.startY, _snipRect.curY);
+      const width = Math.abs(_snipRect.curX - _snipRect.startX);
+      const height = Math.abs(_snipRect.curY - _snipRect.startY);
+
+      if (width < 8 || height < 8) {
+        showToast('Selected area is too small.');
+        return;
+      }
+
+      const scaleX = _rawCaptureCanvas.width / canvasRect.width;
+      const scaleY = _rawCaptureCanvas.height / canvasRect.height;
+
+      const sx = Math.max(0, Math.round((left - canvasRect.left) * scaleX));
+      const sy = Math.max(0, Math.round((top - canvasRect.top) * scaleY));
+      const sw = Math.min(_rawCaptureCanvas.width - sx, Math.round(width * scaleX));
+      const sh = Math.min(_rawCaptureCanvas.height - sy, Math.round(height * scaleY));
+
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = sw;
+      cropCanvas.height = sh;
+      const cropCtx = cropCanvas.getContext('2d');
+      cropCtx.drawImage(_rawCaptureCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+      cropCanvas.toBlob((blob) => {
+        if (!blob) {
+          showToast('Failed to generate cropped image.');
+          return;
+        }
+
+        const fileName = `crop_${Date.now()}.png`;
+        const file = new File([blob], fileName, { type: 'image/png' });
+
+        const input = document.getElementById('snippetImageInput');
+        if (input) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          input.files = dt.files;
+        }
+
+        displaySnippetImagePreview(cropCanvas.toDataURL('image/png'), fileName, (file.size / 1024).toFixed(1) + ' KB');
+
+        cancelSnipping();
+        openCropFromCurrentSource();
+        showToast('✨ Snippet cropped successfully! Add tags and save.');
+      }, 'image/png');
+    }
+
+    function displaySnippetImagePreview(dataUrl, name, sizeStr) {
+      const card = document.getElementById('snippetImagePreviewCard');
+      const img = document.getElementById('snippetImagePreviewImg');
+      const info = document.getElementById('snippetImageFileInfo');
+      if (card && img) {
+        img.src = dataUrl;
+        if (info) info.textContent = `${name || 'snippet.png'} · ${sizeStr || ''}`;
+        card.classList.remove('hidden');
+      }
+    }
+
+    function clearSnippetImagePreview() {
+      const card = document.getElementById('snippetImagePreviewCard');
+      const img = document.getElementById('snippetImagePreviewImg');
+      const input = document.getElementById('snippetImageInput');
+      if (card) card.classList.add('hidden');
+      if (img) img.src = '';
+      if (input) input.value = '';
+    }
+
+    function handleSnippetFileInputChange(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          displaySnippetImagePreview(e.target.result, file.name, (file.size / 1024).toFixed(1) + ' KB');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        clearSnippetImagePreview();
+      }
     }
 
     // Clipboard Paste Listener for instantly attaching screenshot
@@ -2146,6 +2604,13 @@
             const dt = new DataTransfer();
             dt.items.add(file);
             input.files = dt.files;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              displaySnippetImagePreview(ev.target.result, file.name || 'clipboard_snippet.png', (file.size / 1024).toFixed(1) + ' KB');
+            };
+            reader.readAsDataURL(file);
+
             showToast('Snippet image attached from clipboard!');
           }
           break;
@@ -2531,6 +2996,16 @@
           } catch (storageErr) {
             console.warn('Snippet storage error:', storageErr);
           }
+
+          // Resilient fallback: If storage bucket isn't reachable, save as base64 DataURL
+          if (!imagePath) {
+            imagePath = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => resolve(ev.target.result);
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(file);
+            });
+          }
         }
 
         const tagsArray = tagsStr 
@@ -2553,6 +3028,7 @@
         document.getElementById('snippetTagsInput').value = '';
         document.getElementById('snippetNoteInput').value = '';
         if (imageInput) imageInput.value = '';
+        clearSnippetImagePreview();
         await loadAllData();
       } catch (err) {
         console.error('Failed to save snippet:', err);
