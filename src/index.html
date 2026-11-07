@@ -9,6 +9,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Client v2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase Config (loaded from js/supabase-config.js) -->
+  <script src="js/supabase-config.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -86,35 +88,135 @@
 <body class="h-full flex overflow-hidden font-sans select-none bg-[#1f1f1f] text-gray-200">
 
   <!-- ======================================================== -->
+  <!-- AUTH VIEW (Todoist Dark Mode Login / Sign Up View)       -->
+  <!-- ======================================================== -->
+  <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#1e1e1e] px-4">
+    <div class="w-full max-w-sm bg-[#262626] border border-[#333333] rounded-xl p-7 sm:p-8 shadow-2xl space-y-6">
+      
+      <!-- Brand & Header -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1e1e1e] border border-[#383838] text-red-500 shadow-inner">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-100 tracking-tight">Study Vault</h1>
+        <p class="text-xs text-gray-400">Sign in to manage your exams & problem vault</p>
+      </div>
+
+      <!-- Warning if SUPABASE_URL / ANON_KEY are empty -->
+      <div id="authConfigAlert" class="hidden text-xs text-amber-300 bg-amber-950/40 border border-amber-800/60 rounded-lg p-3 space-y-1">
+        <div class="font-medium flex items-center space-x-1.5">
+          <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <span>Supabase credentials needed</span>
+        </div>
+        <p class="text-[11px] text-amber-400/90 leading-relaxed">
+          Please add your <code class="font-mono bg-black/40 px-1 rounded text-gray-200">SUPABASE_URL</code> and <code class="font-mono bg-black/40 px-1 rounded text-gray-200">SUPABASE_ANON_KEY</code> in <span class="font-mono text-gray-200">src/js/supabase-config.js</span> (lines 8 &amp; 9).
+        </p>
+      </div>
+
+      <!-- Auth Alert Messages -->
+      <div id="authErrorMsg" class="hidden text-xs text-red-300 bg-red-950/40 border border-red-800/60 rounded-lg px-3.5 py-2.5 leading-snug"></div>
+      <div id="authSuccessMsg" class="hidden text-xs text-emerald-300 bg-emerald-950/40 border border-emerald-800/60 rounded-lg px-3.5 py-2.5 leading-snug"></div>
+
+      <!-- Auth Form -->
+      <form id="authForm" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-medium text-gray-300">Email</label>
+          <input 
+            id="authEmail" 
+            type="email" 
+            required 
+            placeholder="you@example.com" 
+            autocomplete="email"
+            class="w-full bg-[#1e1e1e] border border-[#383838] focus:border-red-500 rounded-lg px-3.5 py-2.5 text-xs text-gray-100 placeholder-gray-500 focus:outline-none transition"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-medium text-gray-300">Password</label>
+          <input 
+            id="authPassword" 
+            type="password" 
+            required 
+            minlength="6"
+            placeholder="••••••••" 
+            autocomplete="current-password"
+            class="w-full bg-[#1e1e1e] border border-[#383838] focus:border-red-500 rounded-lg px-3.5 py-2.5 text-xs text-gray-100 placeholder-gray-500 focus:outline-none transition"
+          />
+        </div>
+
+        <div class="pt-2 space-y-2.5">
+          <!-- Log in Button (Nổi bật, màu nền đỏ đô nhẹ) -->
+          <button 
+            type="submit" 
+            id="loginBtn" 
+            class="w-full bg-red-700 hover:bg-red-600 active:bg-red-800 text-white font-medium py-2.5 px-4 rounded-lg text-xs transition duration-150 flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
+          >
+            <span id="loginBtnText">Log in</span>
+          </button>
+
+          <!-- Sign up Button (Ghost button) -->
+          <button 
+            type="button" 
+            id="signupBtn" 
+            onclick="handleSignUp()" 
+            class="w-full bg-transparent hover:bg-[#2f2f2f] text-gray-300 hover:text-white border border-[#444444] font-medium py-2.5 px-4 rounded-lg text-xs transition duration-150 flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <span id="signupBtnText">Sign up</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Footer Info -->
+      <div class="text-center pt-2 border-t border-[#333333]">
+        <span class="text-[11px] text-gray-500">Secure Authentication powered by Supabase</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MAIN APP LAYOUT (Hidden until authenticated)             -->
+  <!-- ======================================================== -->
+  <div id="appLayout" class="hidden w-full h-full flex overflow-hidden">
+
+  <!-- ======================================================== -->
   <!-- 1. SIDEBAR NAVIGATION (Todoist Dark Mode Style)          -->
   <!-- ======================================================== -->
   <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-[#262626] border-r border-[#333333] flex flex-col transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 md:static md:h-full">
     
     <!-- User Profile: Avatar + Name + Email at the top -->
-    <div class="h-14 px-4 border-b border-[#333333] flex items-center justify-between">
-      <div class="flex items-center space-x-2.5 min-w-0">
+    <div class="h-14 px-3.5 border-b border-[#333333] flex items-center justify-between">
+      <div class="flex items-center space-x-2.5 min-w-0 flex-1">
         <img 
+          id="sidebarUserAvatar"
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&fit=crop&crop=faces&q=80" 
-          alt="Thai Luong Binh" 
+          alt="User Profile" 
           class="w-7 h-7 rounded-full object-cover shrink-0 border border-[#444444]"
         />
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <div class="flex items-center space-x-1">
-            <span class="font-semibold text-gray-200 text-xs truncate block">Thai Luong Binh</span>
-            <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
+            <span id="sidebarUserName" class="font-semibold text-gray-200 text-xs truncate block">User</span>
           </div>
-          <span class="text-[11px] text-gray-400 truncate block">thailuongbinhfr@gmail.com</span>
+          <span id="sidebarUserEmail" class="text-[11px] text-gray-400 truncate block">user@example.com</span>
         </div>
       </div>
 
-      <!-- Close button on Mobile -->
-      <button id="closeSidebarBtn" class="md:hidden text-gray-400 hover:text-gray-200 p-1 rounded">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+      <div class="flex items-center space-x-1 shrink-0">
+        <!-- Log out button -->
+        <button onclick="handleLogout()" title="Log out" class="text-gray-400 hover:text-red-400 p-1.5 rounded-md hover:bg-[#333333] transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+        <!-- Close button on Mobile -->
+        <button id="closeSidebarBtn" class="md:hidden text-gray-400 hover:text-gray-200 p-1 rounded">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Add Task / Source Button (Distinct yet sober) -->
@@ -499,6 +601,23 @@
           <p class="text-xs text-gray-400 mt-0.5">Manage Supabase BaaS connection and Anki Spaced Repetition deck export</p>
         </div>
 
+        <!-- User Account Profile Card -->
+        <div class="bg-[#262626] rounded-lg border border-[#333333] p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <img id="settingsUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&fit=crop&crop=faces&q=80" alt="Avatar" class="w-9 h-9 rounded-full border border-[#444444]">
+              <div>
+                <h3 id="settingsUserName" class="text-xs font-semibold text-gray-200">Study Vault User</h3>
+                <p id="settingsUserEmail" class="text-[11px] text-gray-400">Authenticated with Supabase Auth</p>
+              </div>
+            </div>
+            <button onclick="handleLogout()" class="px-3 py-1.5 rounded border border-red-900/60 text-red-400 hover:bg-red-950/30 text-xs font-medium transition flex items-center space-x-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              <span>Log out</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Supabase Integration Card -->
         <div class="bg-[#262626] rounded-lg border border-[#333333] p-4 space-y-3">
           <div class="flex items-center justify-between">
@@ -520,7 +639,7 @@
           <div class="bg-[#1e1e1e] rounded p-2.5 text-[11px] space-y-1 font-mono text-gray-400">
             <div class="flex justify-between">
               <span>Project Host:</span>
-              <span class="text-gray-200 font-semibold truncate max-w-[240px]">zjgldhqggxnsnvxbdgcv.supabase.co</span>
+              <span id="settingsHostName" class="text-gray-200 font-semibold truncate max-w-[240px]">supabase.co</span>
             </div>
             <div class="flex justify-between">
               <span>Database Records:</span>
@@ -565,6 +684,7 @@
     </section>
 
   </main>
+  </div><!-- End of #appLayout -->
 
 
   <!-- ======================================================== -->
@@ -691,15 +811,11 @@
   <!-- ======================================================== -->
   <script>
     // -------------------------------------------------------------
-    // 1. SUPABASE CLIENT CONFIGURATION
+    // 1. SUPABASE CLIENT & STATE INITIALIZATION
     // -------------------------------------------------------------
-    const SUPABASE_URL = 'https://zjgldhqggxnsnvxbdgcv.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZ2xkaHFnZ3huc252eGJkZ2N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwMjUyNDgsImV4cCI6MjEwOTYwMTI0OH0.ricjQE5t9Kq1nMc43Pbvw4XsqqgPkwb-br1lJ5w5In8';
-    
-    // Initialize Supabase Client via CDN
-    const supabase = (window.supabase && window.supabase.createClient) 
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-      : null;
+    // Supabase client instance (configured via js/supabase-config.js)
+    var supabase = window.supabaseClient || null;
+    let currentUser = null;
 
     // Local Application State
     let currentSources = [];
@@ -708,7 +824,249 @@
     let vaultSearchQuery = '';
 
     // -------------------------------------------------------------
-    // 2. LIFECYCLE & DATA FETCHING
+    // 2. AUTHENTICATION LOGIC (Vanilla JS + Supabase Auth)
+    // -------------------------------------------------------------
+    async function checkSession() {
+      const alertBox = document.getElementById('authConfigAlert');
+      
+      // Ensure supabase client reference is current
+      if (!supabase && window.supabaseClient) {
+        supabase = window.supabaseClient;
+      }
+
+      // If keys are not set in js/supabase-config.js
+      if (!supabase) {
+        if (alertBox) alertBox.classList.remove('hidden');
+        showAuthScreen();
+        return;
+      } else {
+        if (alertBox) alertBox.classList.add('hidden');
+      }
+
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.warn('Session retrieval warning:', error);
+          showAuthScreen();
+          return;
+        }
+
+        if (session && session.user) {
+          applyUserSession(session);
+        } else {
+          showAuthScreen();
+        }
+      } catch (err) {
+        console.error('Session check error:', err);
+        showAuthScreen();
+      }
+    }
+
+    async function handleLogin() {
+      const emailInput = document.getElementById('authEmail');
+      const passwordInput = document.getElementById('authPassword');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginBtnText = document.getElementById('loginBtnText');
+      const errorMsg = document.getElementById('authErrorMsg');
+      const successMsg = document.getElementById('authSuccessMsg');
+
+      if (errorMsg) errorMsg.classList.add('hidden');
+      if (successMsg) successMsg.classList.add('hidden');
+
+      if (!supabase && window.supabaseClient) supabase = window.supabaseClient;
+
+      if (!supabase) {
+        if (errorMsg) {
+          errorMsg.textContent = 'Please configure SUPABASE_URL and SUPABASE_ANON_KEY in src/js/supabase-config.js (lines 8 & 9) first.';
+          errorMsg.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      if (!email || !password) {
+        if (errorMsg) {
+          errorMsg.textContent = 'Please enter both email and password.';
+          errorMsg.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (loginBtn) loginBtn.disabled = true;
+      if (loginBtnText) loginBtnText.textContent = 'Logging in...';
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) throw error;
+
+        showToast('Logged in successfully!');
+        if (data.session) {
+          applyUserSession(data.session);
+        } else {
+          await checkSession();
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        if (errorMsg) {
+          errorMsg.textContent = err.message || 'Login failed. Please verify your credentials.';
+          errorMsg.classList.remove('hidden');
+        }
+      } finally {
+        if (loginBtn) loginBtn.disabled = false;
+        if (loginBtnText) loginBtnText.textContent = 'Log in';
+      }
+    }
+
+    async function handleSignUp() {
+      const emailInput = document.getElementById('authEmail');
+      const passwordInput = document.getElementById('authPassword');
+      const signupBtn = document.getElementById('signupBtn');
+      const signupBtnText = document.getElementById('signupBtnText');
+      const errorMsg = document.getElementById('authErrorMsg');
+      const successMsg = document.getElementById('authSuccessMsg');
+
+      if (errorMsg) errorMsg.classList.add('hidden');
+      if (successMsg) successMsg.classList.add('hidden');
+
+      if (!supabase && window.supabaseClient) supabase = window.supabaseClient;
+
+      if (!supabase) {
+        if (errorMsg) {
+          errorMsg.textContent = 'Please configure SUPABASE_URL and SUPABASE_ANON_KEY in src/js/supabase-config.js (lines 8 & 9) first.';
+          errorMsg.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      if (!email || !password) {
+        if (errorMsg) {
+          errorMsg.textContent = 'Please enter both email and password.';
+          errorMsg.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (password.length < 6) {
+        if (errorMsg) {
+          errorMsg.textContent = 'Password must be at least 6 characters.';
+          errorMsg.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (signupBtn) signupBtn.disabled = true;
+      if (signupBtnText) signupBtnText.textContent = 'Signing up...';
+
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: email,
+          password: password
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          showToast('Account created and logged in!');
+          applyUserSession(data.session);
+        } else {
+          if (successMsg) {
+            successMsg.textContent = 'Registration successful! If email confirmation is enabled on your Supabase project, please check your inbox.';
+            successMsg.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error('Sign up error:', err);
+        if (errorMsg) {
+          errorMsg.textContent = err.message || 'Failed to sign up.';
+          errorMsg.classList.remove('hidden');
+        }
+      } finally {
+        if (signupBtn) signupBtn.disabled = false;
+        if (signupBtnText) signupBtnText.textContent = 'Sign up';
+      }
+    }
+
+    async function handleLogout() {
+      if (!confirm('Are you sure you want to log out of Study Vault?')) return;
+      try {
+        if (supabase) {
+          await supabase.auth.signOut();
+        }
+        currentUser = null;
+        currentSources = [];
+        currentProblems = [];
+        showToast('Logged out successfully');
+        showAuthScreen();
+      } catch (err) {
+        console.error('Logout error:', err);
+        showToast('Logout error: ' + (err.message || err));
+      }
+    }
+
+    function applyUserSession(session) {
+      if (!session || !session.user) return;
+      currentUser = session.user;
+
+      const email = currentUser.email || '';
+      const displayName = currentUser.user_metadata?.full_name || email.split('@')[0] || 'User';
+
+      // 1. Update Sidebar Profile
+      const nameElem = document.getElementById('sidebarUserName');
+      if (nameElem) nameElem.textContent = displayName;
+
+      const emailElem = document.getElementById('sidebarUserEmail');
+      if (emailElem) emailElem.textContent = email;
+
+      const avatarElem = document.getElementById('sidebarUserAvatar');
+      if (avatarElem) {
+        avatarElem.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=333333&color=ffffff&size=96&bold=true`;
+        avatarElem.alt = displayName;
+      }
+
+      // 2. Update Settings view profile
+      const settingsName = document.getElementById('settingsUserName');
+      if (settingsName) settingsName.textContent = displayName;
+
+      const settingsEmail = document.getElementById('settingsUserEmail');
+      if (settingsEmail) settingsEmail.textContent = email;
+
+      const settingsAvatar = document.getElementById('settingsUserAvatar');
+      if (settingsAvatar) {
+        settingsAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=333333&color=ffffff&size=96&bold=true`;
+      }
+
+      // 3. Reveal Main App, Hide Auth Screen
+      hideAuthScreen();
+
+      // 4. Load application data
+      loadAllData();
+    }
+
+    function showAuthScreen() {
+      const authScreen = document.getElementById('authScreen');
+      const appLayout = document.getElementById('appLayout');
+      if (authScreen) authScreen.classList.remove('hidden');
+      if (appLayout) appLayout.classList.add('hidden');
+    }
+
+    function hideAuthScreen() {
+      const authScreen = document.getElementById('authScreen');
+      const appLayout = document.getElementById('appLayout');
+      if (authScreen) authScreen.classList.add('hidden');
+      if (appLayout) appLayout.classList.remove('hidden');
+    }
+
+    // -------------------------------------------------------------
+    // 3. LIFECYCLE & DATA FETCHING
     // -------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
       // Set Today subtitle date
@@ -725,13 +1083,25 @@
       // Build upcoming week date picker
       renderDatePickerStrip(now);
 
-      // Load live data from Supabase
-      loadAllData();
+      // Listen to Auth State Changes
+      if (window.supabaseClient && window.supabaseClient.auth) {
+        window.supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            if (session) applyUserSession(session);
+          } else if (event === 'SIGNED_OUT') {
+            showAuthScreen();
+          }
+        });
+      }
+
+      // Verify Session on Load
+      checkSession();
     });
 
     async function loadAllData() {
+      if (!supabase && window.supabaseClient) supabase = window.supabaseClient;
       if (!supabase) {
-        showToast('Supabase client not loaded. Check internet connection.');
+        showToast('Supabase client not configured.');
         return;
       }
 
@@ -766,6 +1136,15 @@
         const statsElem = document.getElementById('settingsTableStats');
         if (statsElem) {
           statsElem.textContent = `sources (${currentSources.length}), problems (${currentProblems.length})`;
+        }
+
+        const hostElem = document.getElementById('settingsHostName');
+        if (hostElem && window.SUPABASE_URL) {
+          try {
+            hostElem.textContent = new URL(window.SUPABASE_URL).host;
+          } catch {
+            hostElem.textContent = window.SUPABASE_URL || 'supabase.co';
+          }
         }
       } catch (err) {
         console.error('Error fetching data from Supabase:', err);
