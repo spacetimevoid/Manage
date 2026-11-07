@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50 text-slate-800 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Personal Study Vault - Beta Demo</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#dc2626',
+              amber: '#d97706',
+              blue: '#2563eb',
+              emerald: '#059669',
+              purple: '#7c3aed'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Tùy chỉnh thanh cuộn tối giản */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Animation mượt cho chuyển tab và drawer mobile */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.18s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hiệu ứng checkbox Todoist */
+    .todo-checkbox:checked + .todo-label {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden font-sans select-none bg-slate-50">
+
+  <!-- ========================================== -->
+  <!-- 1. SIDEBAR NAVIGATION (Desktop & iPad)     -->
+  <!-- ========================================== -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 md:static md:h-full">
+    <!-- Header Sidebar / App Logo -->
+    <div class="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-200 font-bold text-base">
+          <!-- Icon Vault -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div>
+          <span class="font-bold text-slate-800 text-sm tracking-tight block">Study Vault</span>
+          <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider block -mt-0.5">PWA Beta v0.1</span>
+        </div>
+      </div>
+
+      <!-- Nút đóng sidebar trên Mobile -->
+      <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Quick Add Button (Kiểu Todoist) -->
+    <div class="p-3">
+      <button onclick="openQuickAddModal()" class="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-xs transition border border-indigo-200/60 shadow-xs">
+        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Thêm đề thi / Note mới</span>
+      </button>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+      <!-- Mục Dashboard -->
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 transition group active-nav bg-slate-100 text-indigo-700">
+        <div class="flex items-center space-x-2.5">
+          <svg class="w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <span>Dashboard (Đề thi)</span>
+        </div>
+        <span class="bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded text-[10px]" title="2 đề quá hạn">2</span>
+      </button>
+
+      <!-- Mục Problem Vault -->
+      <button onclick="switchTab('vault')" id="nav-vault" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition group">
+        <div class="flex items-center space-x-2.5">
+          <svg class="w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <span>Problem Vault</span>
+        </div>
+        <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-semibold">24</span>
+      </button>
+
+      <!-- Mục Settings & Sync -->
+      <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition group">
+        <div class="flex items-center space-x-2.5">
+          <svg class="w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Cài đặt & Đồng bộ</span>
+        </div>
+      </button>
+
+      <!-- Danh mục môn học (Tags) -->
+      <div class="pt-4 pb-1">
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Chủ đề & Môn học</p>
+      </div>
+
+      <div class="space-y-0.5">
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Toán')" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-slate-100 transition">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span>Toán học</span>
+          </div>
+          <span class="text-[11px] text-slate-400">8</span>
+        </a>
+
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Vật Lý')" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-slate-100 transition">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+            <span>Vật lý</span>
+          </div>
+          <span class="text-[11px] text-slate-400">6</span>
+        </a>
+
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Hóa Học')" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-slate-100 transition">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Hóa học</span>
+          </div>
+          <span class="text-[11px] text-slate-400">5</span>
+        </a>
+
+        <a href="javascript:void(0)" onclick="filterVaultByTag('IELTS')" class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-slate-100 transition">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>IELTS / Anh</span>
+          </div>
+          <span class="text-[11px] text-slate-400">5</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Footer Sidebar: Google Drive Connection Status -->
+    <div class="p-3 border-t border-slate-100 bg-slate-50/50">
+      <div class="flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-slate-600 font-medium text-[11px]">Drive: Sẵn sàng</span>
+        </div>
+        <span class="text-[10px] text-slate-400">Local-First</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Backdrop cho Mobile Drawer -->
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 z-30 hidden md:hidden transition-opacity"></div>
+
+
+  <!-- ========================================== -->
+  <!-- MAIN CONTENT CONTAINER                     -->
+  <!-- ========================================== -->
+  <main class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+    
+    <!-- Top Mobile/iPad Bar -->
+    <header class="h-14 md:hidden border-b border-slate-200 px-4 flex items-center justify-between bg-white shrink-0">
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleSidebar()" class="text-slate-600 p-1.5 rounded-md hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span id="mobileViewTitle" class="font-bold text-slate-800 text-sm">Dashboard</span>
+      </div>
+      <button onclick="openQuickAddModal()" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </header>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 1: DASHBOARD (Cảm hứng từ phong cách Todoist)       -->
+    <!-- ======================================================== -->
+    <section id="view-dashboard" class="tab-content active h-full overflow-y-auto px-4 md:px-10 py-6">
+      <div class="max-w-4xl mx-auto space-y-7">
+        
+        <!-- Header Dashboard -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Kế hoạch ôn tập & Đề thi</h1>
+            <p class="text-xs text-slate-500 mt-1">Theo dõi deadline nộp bài, giải đề và phân tích câu khó</p>
+          </div>
+          <!-- View Stats & Quick Filters -->
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>2 Quá hạn
+            </span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>2 Hôm nay
+            </span>
+          </div>
+        </div>
+
+        <!-- NHÓM 1: QUÁ HẠN (Overdue - Phong cách Todoist đỏ rực) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-red-200 pb-1.5">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-red-600 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Quá hạn
+              </span>
+              <span class="text-xs text-slate-400 font-medium">2</span>
+            </div>
+            <span class="text-[11px] text-red-500 font-medium">Cần hoàn thành gấp</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <!-- Item 1: Đề Toán -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    Đề thi thử THPT Quốc Gia - Chuyên ĐH Sư Phạm (Lần 1)
+                  </span>
+                  <span class="text-xs text-red-600 font-medium flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Hôm qua
+                  </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5 line-clamp-1">Đã giải 40/50 câu. Còn 10 câu vận dụng cao cần crop đưa vào Problem Vault.</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700">#Toán-12</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700">10 câu vào Vault</span>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] text-slate-400 bg-slate-100">
+                    <svg class="w-3 h-3 mr-1 text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+                    Google Drive PDF
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2: Đề Lý -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    Bài tập Sóng cơ & Giao thoa nâng cao - Thầy Vũ
+                  </span>
+                  <span class="text-xs text-red-600 font-medium">04/11</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5 line-clamp-1">3 câu đồ thị sóng hình sin bị sai đáp án cần xem lại lý thuyết.</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-teal-50 text-teal-700">#VậtLý</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700">Chưa giải thích lỗi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 2: HÔM NAY (Today) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-amber-200 pb-1.5">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Hôm nay
+              </span>
+              <span class="text-xs text-slate-400 font-medium">2</span>
+            </div>
+            <span class="text-[11px] text-slate-400">Thứ Bảy, 07 tháng 11</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <!-- Item 3: Đề Hóa -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    Đề kiểm tra 50 phút Hóa Hữu Cơ: Chuyên đề Este - Peptit
+                  </span>
+                  <span class="text-xs text-amber-600 font-medium">21:00 hôm nay</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Bấm giờ làm nghiêm túc để rèn tốc độ tính toán.</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">#HóaHọc</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">Đề 40 câu</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4: IELTS Writing -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    IELTS Writing Task 2: Topic "Artificial Intelligence in Education"
+                  </span>
+                  <span class="text-xs text-amber-600 font-medium">23:59 hôm nay</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Viết bài hoàn chỉnh và highlight các cụm Collocation hay vào Vault.</p>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700">#IELTS</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700">Anki Export</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 3: TUẦN NÀY (This Week) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-1.5">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Tuần này
+              </span>
+              <span class="text-xs text-slate-400 font-medium">3</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <!-- Item 5 -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    Đề Khảo sát chất lượng Toán 12 - Sở GD&ĐT Hà Nội
+                  </span>
+                  <span class="text-xs text-slate-500">Chủ Nhật, 10/11</span>
+                </div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700">#Toán-12</span>
+                  <span class="text-xs text-slate-400">File Drive: De_KSCL_HN.pdf</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="group flex items-start space-x-3 p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition">
+              <input type="checkbox" class="todo-checkbox mt-1 w-4 h-4 rounded-full border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="todo-label text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition cursor-pointer">
+                    Trọn bộ câu hỏi trắc nghiệm Lý thuyết Hóa Vô cơ 12
+                  </span>
+                  <span class="text-xs text-slate-500">12/11</span>
+                </div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">#HóaHọc</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Add Task Bar (Cuối danh sách) -->
+        <button onclick="openQuickAddModal()" class="w-full py-2.5 border border-dashed border-slate-300 hover:border-indigo-400 rounded-lg text-slate-500 hover:text-indigo-600 font-medium text-xs flex items-center justify-center space-x-2 transition bg-white/50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Thêm đề thi hoặc bài tập mới...</span>
+        </button>
+
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 2: PROBLEM VAULT (Cảm hứng từ phong cách Google Keep) -->
+    <!-- ======================================================== -->
+    <section id="view-vault" class="tab-content h-full overflow-y-auto px-4 md:px-8 py-6">
+      <div class="max-w-6xl mx-auto space-y-6">
+
+        <!-- 1. Thanh Search Bar TO, NỔI BẬT ở trên cùng (Google Keep style) -->
+        <div class="relative max-w-2xl mx-auto">
+          <div class="flex items-center w-full bg-white rounded-2xl shadow-sm border border-slate-200/90 hover:border-slate-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition px-4 py-2.5">
+            <svg class="w-5 h-5 text-slate-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              type="text" 
+              id="vaultSearchInput" 
+              oninput="filterVaultCards()"
+              placeholder="Tìm kiếm câu khó theo tag (#Toán, #VậnDụngCao), ghi chú, nguồn đề..." 
+              class="w-full text-sm text-slate-800 placeholder-slate-400 focus:outline-none bg-transparent"
+            >
+            <button onclick="clearVaultSearch()" id="clearSearchBtn" class="hidden text-slate-400 hover:text-slate-600 ml-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Thanh Quick Snippet Bar ("Take a Note" kiểu Keep) -->
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-xs border border-slate-200 p-3 flex items-center justify-between text-slate-400 text-xs hover:border-slate-300 cursor-pointer transition" onclick="openQuickAddModal('vault')">
+          <span class="text-slate-500 font-medium">Thêm nhanh câu khó vào Vault (Dán ảnh hoặc crop)...</span>
+          <div class="flex items-center space-x-2 text-slate-400">
+            <button class="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded" title="Dán ảnh crop">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </button>
+            <button class="p-1.5 hover:text-indigo-600 hover:bg-slate-100 rounded" title="Lấy từ Google Drive">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Horizontal Tag Filter Chips (Scrollable trên Mobile/iPad) -->
+        <div class="flex items-center space-x-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs">
+          <span class="text-slate-400 font-medium whitespace-nowrap pl-1">Lọc nhanh:</span>
+          <button onclick="filterVaultByTag('all')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-900 text-white font-medium whitespace-nowrap transition">Tất cả (24)</button>
+          <button onclick="filterVaultByTag('Toán')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#Toán</button>
+          <button onclick="filterVaultByTag('VậnDụngCao')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#VậnDụngCao</button>
+          <button onclick="filterVaultByTag('HìnhKhôngGian')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#HìnhKhôngGian</button>
+          <button onclick="filterVaultByTag('Vật Lý')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#VậtLý</button>
+          <button onclick="filterVaultByTag('Hóa Học')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#HóaHọc</button>
+          <button onclick="filterVaultByTag('IELTS')" class="vault-tag-chip px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap transition">#IELTS</button>
+        </div>
+
+        <!-- 4. Lưới thẻ câu hỏi (Grid / Masonry Cards tối ưu cho iPad Landscape & Mobile) -->
+        <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-12">
+
+          <!-- THẺ 1: Câu Hình không gian Toán 12 -->
+          <div class="vault-card group bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between"
+               data-tags="Toán VậnDụngCao HìnhKhôngGian"
+               data-title="Góc giữa hai mặt phẳng trong hình lập phương">
+            <div>
+              <!-- Khung Placeholder cho ảnh câu hỏi gốc (Crop từ đề PDF) -->
+              <div class="relative bg-slate-900 border-b border-slate-100 p-4 flex items-center justify-center min-h-[160px] overflow-hidden">
+                <!-- Giả lập hình vẽ Oxyz chuyên nghiệp bằng SVG -->
+                <svg class="w-full h-32 text-indigo-400" viewBox="0 0 240 120" fill="none">
+                  <path d="M40 80 L120 100 L200 70 L120 50 Z" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="2 2" />
+                  <path d="M40 80 L40 30 L120 50 L120 100" stroke="#a5b4fc" stroke-width="1.5" />
+                  <path d="M200 70 L200 20 L120 50" stroke="#a5b4fc" stroke-width="1.5" />
+                  <path d="M40 30 L120 10 L200 20" stroke="#6366f1" stroke-width="2" />
+                  <circle cx="120" cy="50" r="3" fill="#ef4444" />
+                  <text x="125" y="48" fill="#fca5a5" font-size="9" font-family="monospace">Gốc O(0,0,0)</text>
+                  <text x="45" y="25" fill="#e0e7ff" font-size="10" font-weight="bold">Câu 47 [Đề ĐHSP]</text>
+                </svg>
+                <span class="absolute top-2 right-2 bg-slate-800/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">Crop #892</span>
+              </div>
+
+              <!-- Nội dung thẻ: Tags + Ghi chú lỗi sai -->
+              <div class="p-3.5 space-y-2.5">
+                <!-- Badges -->
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-semibold rounded">Toán</span>
+                  <span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-semibold rounded">Vận dụng cao</span>
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-medium rounded">#HìnhKhôngGian</span>
+                </div>
+
+                <!-- Tiêu đề / Nguồn đề -->
+                <h3 class="text-xs font-bold text-slate-900">Tính Cosin góc giữa (SBD) và (ABCD)</h3>
+
+                <!-- Dòng ghi chú text (Mistake Note) -->
+                <p class="text-xs text-slate-600 bg-amber-50/70 border-l-2 border-amber-400 p-2 rounded-r text-[11px] leading-relaxed">
+                  <strong class="text-amber-800">Chìa khóa:</strong> Gắn hệ trục tọa độ Oxyz trực tiếp vào đỉnh lập phương để tính tích có hướng 2 vecto pháp tuyến, không nên dựng hình phụ sẽ mất nhiều thời gian.
+                </p>
+              </div>
+            </div>
+
+            <!-- Card Footer: Quick Actions (Anki, Drive, Pin) -->
+            <div class="px-3.5 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+              <span class="text-[10px] text-slate-400">Đã review: 2 lần</span>
+              <div class="flex items-center space-x-1">
+                <button onclick="previewAnkiExport('Câu 47 - Hình không gian Oxyz')" class="p-1 hover:text-indigo-600 hover:bg-slate-200/60 rounded" title="Xuất sang Anki Card">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </button>
+                <button class="p-1 hover:text-slate-600 hover:bg-slate-200/60 rounded" title="Ghim lên đầu">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- THẺ 2: Đồ thị Vật Lý Sóng Cơ -->
+          <div class="vault-card group bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between"
+               data-tags="Vật Lý VậnDụngCao DoThi"
+               data-title="Đồ thị dao động và độ lệch pha sóng điện xoay chiều">
+            <div>
+              <!-- Khung Placeholder ảnh crop đồ thị -->
+              <div class="relative bg-slate-900 border-b border-slate-100 p-4 flex items-center justify-center min-h-[160px] overflow-hidden">
+                <svg class="w-full h-32" viewBox="0 0 240 120" fill="none">
+                  <!-- Trục tọa độ -->
+                  <line x1="20" y1="60" x2="220" y2="60" stroke="#475569" stroke-width="1.5" />
+                  <line x1="40" y1="10" x2="40" y2="110" stroke="#475569" stroke-width="1.5" />
+                  <!-- Sóng sin 1 -->
+                  <path d="M40 60 Q80 10 120 60 T200 60" stroke="#38bdf8" stroke-width="2" fill="none" />
+                  <!-- Sóng sin 2 trễ pha -->
+                  <path d="M40 90 Q80 40 120 90 T200 90" stroke="#fb923c" stroke-width="2" stroke-dasharray="3 3" fill="none" />
+                  <text x="140" y="30" fill="#38bdf8" font-size="9" font-family="monospace">u(t) sớm pha π/3</text>
+                </svg>
+                <span class="absolute top-2 right-2 bg-slate-800/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">Crop #893</span>
+              </div>
+
+              <div class="p-3.5 space-y-2.5">
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 bg-teal-50 text-teal-700 text-[11px] font-semibold rounded">Vật Lý</span>
+                  <span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-semibold rounded">Vận dụng cao</span>
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-medium rounded">#ĐiệnXoayChiều</span>
+                </div>
+
+                <h3 class="text-xs font-bold text-slate-900">Đọc đồ thị u-i và thời điểm ngắt khóa K</h3>
+
+                <p class="text-xs text-slate-600 bg-red-50/70 border-l-2 border-red-400 p-2 rounded-r text-[11px] leading-relaxed">
+                  <strong class="text-red-700">Lỗi hay gặp:</strong> Quên đổi đơn vị mili-giây (ms) sang giây trên trục hoành dẫn đến tính sai tần số góc ω.
+                </p>
+              </div>
+            </div>
+
+            <div class="px-3.5 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+              <span class="text-[10px] text-slate-400">Đã review: 0 lần</span>
+              <div class="flex items-center space-x-1">
+                <button onclick="previewAnkiExport('Câu đồ thị u-i')" class="p-1 hover:text-indigo-600 hover:bg-slate-200/60 rounded" title="Xuất sang Anki Card">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </button>
+                <button class="p-1 hover:text-slate-600 hover:bg-slate-200/60 rounded">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- THẺ 3: Este - Peptit Hóa Học 12 -->
+          <div class="vault-card group bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between"
+               data-tags="Hóa Học VậnDụngCao Este"
+               data-title="Quy đổi hỗn hợp este đa chức mạch hở">
+            <div>
+              <!-- Khung Placeholder công thức hóa học -->
+              <div class="relative bg-slate-900 border-b border-slate-100 p-4 flex items-center justify-center min-h-[160px] overflow-hidden">
+                <div class="text-emerald-400 font-mono text-center space-y-1">
+                  <div class="text-xs tracking-wider text-slate-300">Quy đổi dồn chất:</div>
+                  <div class="text-sm font-bold text-emerald-300">X = { COO, CH₂, H₂ }</div>
+                  <div class="text-[11px] text-slate-400">nCOO = nNaOH = 0.35 mol</div>
+                </div>
+                <span class="absolute top-2 right-2 bg-slate-800/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">Crop #894</span>
+              </div>
+
+              <div class="p-3.5 space-y-2.5">
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-semibold rounded">Hóa Học</span>
+                  <span class="px-2 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-semibold rounded">Vận dụng cao</span>
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-medium rounded">#Este</span>
+                </div>
+
+                <h3 class="text-xs font-bold text-slate-900">Este 3 chức tác dụng với NaOH thu được 2 muối</h3>
+
+                <p class="text-xs text-slate-600 bg-blue-50/70 border-l-2 border-blue-400 p-2 rounded-r text-[11px] leading-relaxed">
+                  <strong class="text-blue-800">Phương pháp:</strong> Dồn chất về COO + CH2 + H2 giúp giảm từ 4 ẩn số xuống còn 2 phương trình bảo toàn khối lượng và nguyên tố Oxi.
+                </p>
+              </div>
+            </div>
+
+            <div class="px-3.5 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+              <span class="text-[10px] text-slate-400">Đã review: 4 lần</span>
+              <div class="flex items-center space-x-1">
+                <button onclick="previewAnkiExport('Bài toán Este quy đổi')" class="p-1 hover:text-indigo-600 hover:bg-slate-200/60 rounded" title="Xuất sang Anki Card">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </button>
+                <button class="p-1 hover:text-slate-600 hover:bg-slate-200/60 rounded">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- THẺ 4: IELTS Writing Task 2 Collocation -->
+          <div class="vault-card group bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between"
+               data-tags="IELTS Writing Vocabulary"
+               data-title="Collocations & Paraphrasing Writing Task 2">
+            <div>
+              <div class="relative bg-slate-900 border-b border-slate-100 p-4 flex items-center justify-center min-h-[160px] overflow-hidden">
+                <div class="text-amber-300 font-sans text-center space-y-1">
+                  <div class="text-[11px] text-slate-400 uppercase tracking-widest">Essay Structure</div>
+                  <div class="text-xs font-semibold text-white">"Exert a detrimental impact on..."</div>
+                  <div class="text-[11px] text-amber-400/90 font-mono">Thay thế cho: "have a bad effect"</div>
+                </div>
+                <span class="absolute top-2 right-2 bg-slate-800/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">Note #895</span>
+              </div>
+
+              <div class="p-3.5 space-y-2.5">
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 bg-amber-50 text-amber-700 text-[11px] font-semibold rounded">IELTS</span>
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-medium rounded">#WritingTask2</span>
+                </div>
+
+                <h3 class="text-xs font-bold text-slate-900">Template phản biện 2 luồng quan điểm</h3>
+
+                <p class="text-xs text-slate-600 bg-amber-50/70 border-l-2 border-amber-400 p-2 rounded-r text-[11px] leading-relaxed">
+                  <strong class="text-amber-800">Cấu trúc:</strong> "While it is justifiable to argue that X, I maintain that Y yields far more profound ramifications..."
+                </p>
+              </div>
+            </div>
+
+            <div class="px-3.5 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+              <span class="text-[10px] text-slate-400">Đã sync Anki</span>
+              <div class="flex items-center space-x-1">
+                <button onclick="previewAnkiExport('IELTS Collocations')" class="p-1 hover:text-indigo-600 hover:bg-slate-200/60 rounded" title="Xuất sang Anki Card">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </button>
+                <button class="p-1 hover:text-slate-600 hover:bg-slate-200/60 rounded">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 3: SETTINGS & SYNC (Cài đặt & Google Drive)         -->
+    <!-- ======================================================== -->
+    <section id="view-settings" class="tab-content h-full overflow-y-auto px-4 md:px-10 py-6">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Cài đặt & Đồng bộ</h1>
+          <p class="text-xs text-slate-500 mt-1">Cấu hình kết nối Google Drive và xuất dữ liệu sang Anki</p>
+        </div>
+
+        <!-- Google Drive Integration Card -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800">Lưu trữ Google Drive</h3>
+                <p class="text-xs text-slate-500">Chứa file PDF gốc và ảnh crop câu khó</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-100">Đã kết nối OAuth</span>
+          </div>
+
+          <div class="bg-slate-50 rounded-lg p-3 text-xs space-y-1.5 font-mono text-slate-600">
+            <div class="flex justify-between">
+              <span>Thư mục Drive:</span>
+              <span class="text-slate-800 font-semibold">/Personal Study Vault/</span>
+            </div>
+            <div class="flex justify-between">
+              <span>File đồng bộ Metadata:</span>
+              <span class="text-slate-800 font-semibold">vault_db.json (0.4 MB)</span>
+            </div>
+          </div>
+
+          <div class="pt-1 flex gap-2">
+            <button class="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium transition shadow-xs">
+              Đồng bộ ngay với Drive
+            </button>
+            <button class="px-3.5 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition">
+              Đổi tài khoản Google
+            </button>
+          </div>
+        </div>
+
+        <!-- Anki Export Settings -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-sm">
+              Anki
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-slate-800">Tích hợp Anki (Spaced Repetition)</h3>
+              <p class="text-xs text-slate-500">Tự động cấu hình định dạng thẻ Flashcard</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs text-slate-700">
+            <label class="flex items-center space-x-2.5 cursor-pointer">
+              <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600 border-slate-300">
+              <span>Tự động đính kèm ảnh crop câu hỏi làm mặt trước (Front) của thẻ</span>
+            </label>
+            <label class="flex items-center space-x-2.5 cursor-pointer">
+              <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600 border-slate-300">
+              <span>Đưa chìa khóa giải và ghi chú lỗi sai vào mặt sau (Back)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: XUẤT ANKI PREVIEW                   -->
+  <!-- ========================================== -->
+  <div id="ankiModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+          <h3 class="text-sm font-bold text-slate-800">Xuất thẻ Anki Flashcard</h3>
+        </div>
+        <button onclick="closeAnkiModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="bg-slate-50 rounded-lg p-3 text-xs border border-slate-200/80">
+          <span class="font-bold text-slate-700 block mb-1">Mặt trước (Front):</span>
+          <p id="ankiModalTitle" class="text-slate-600 font-medium">[Hình ảnh crop câu hỏi & Đề thi gốc]</p>
+        </div>
+        <div class="bg-amber-50/80 rounded-lg p-3 text-xs border border-amber-200/60">
+          <span class="font-bold text-amber-800 block mb-1">Mặt sau (Back):</span>
+          <p class="text-amber-900">Ghi chú phương pháp giải, công thức trọng tâm và bẫy đề thi cần tránh.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="closeAnkiModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50">Hủy</button>
+        <button onclick="alert('Đã sinh gói Anki (.apkg/.csv) thành công!'); closeAnkiModal()" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs">Tải file .apkg</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: THÊM NHANH ĐỀ THI / CÂU HỎI        -->
+  <!-- ========================================== -->
+  <div id="quickAddModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-sm font-bold text-slate-800" id="quickAddModalTitle">Thêm mới tài liệu / đề thi</h3>
+        <button onclick="closeQuickAddModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-700 font-medium mb-1">Tên đề thi / Bài tập:</label>
+          <input type="text" placeholder="VD: Đề thi thử Toán THPT Quốc Gia..." class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-700 font-medium mb-1">Môn học:</label>
+            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+              <option>Toán học</option>
+              <option>Vật lý</option>
+              <option>Hóa học</option>
+              <option>IELTS / Tiếng Anh</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-700 font-medium mb-1">Deadline:</label>
+            <input type="date" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-medium mb-1">Tải file PDF hoặc ảnh chụp (Lưu trực tiếp Google Drive):</label>
+          <div class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-xl p-4 text-center cursor-pointer transition">
+            <svg class="w-6 h-6 text-slate-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span class="text-slate-500">Nhấp để chọn file hoặc kéo thả file vào đây</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+        <button onclick="closeQuickAddModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50">Hủy</button>
+        <button onclick="alert('Đã lưu thành công vào Local IndexedDB & Google Drive!'); closeQuickAddModal()" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs">Lưu đề thi</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT TĨNH - ĐIỀU HƯỚNG VÀ TƯƠNG TÁC -->
+  <!-- ========================================== -->
+  <script>
+    // 1. Chuyển đổi View Tab
+    function switchTab(tabId) {
+      // Ẩn tất cả views
+      document.querySelectorAll('.tab-content').forEach(view => {
+        view.classList.remove('active');
+      });
+
+      // Bỏ active trên tất cả nav items
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('active-nav', 'bg-slate-100', 'text-indigo-700', 'font-semibold');
+        btn.classList.add('text-slate-600', 'font-medium');
+      });
+
+      // Hiển thị view được chọn
+      const selectedView = document.getElementById(`view-${tabId}`);
+      if (selectedView) {
+        selectedView.classList.add('active');
+      }
+
+      // Đánh dấu active button
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.add('active-nav', 'bg-slate-100', 'text-indigo-700', 'font-semibold');
+        activeNav.classList.remove('text-slate-600', 'font-medium');
+      }
+
+      // Cập nhật title trên Mobile
+      const mobileTitles = {
+        'dashboard': 'Dashboard (Đề thi)',
+        'vault': 'Problem Vault (Câu khó)',
+        'settings': 'Cài đặt & Đồng bộ'
+      };
+      const mobileTitleElem = document.getElementById('mobileViewTitle');
+      if (mobileTitleElem && mobileTitles[tabId]) {
+        mobileTitleElem.textContent = mobileTitles[tabId];
+      }
+
+      // Tự động đóng sidebar trên Mobile khi chọn tab
+      if (window.innerWidth < 768) {
+        closeSidebar();
+      }
+    }
+
+    // 2. Quản lý Sidebar trên Mobile & iPad
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    }
+
+    function openSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      sidebar.classList.remove('-translate-x-full');
+      backdrop.classList.remove('hidden');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      sidebar.classList.add('-translate-x-full');
+      backdrop.classList.add('hidden');
+    }
+
+    document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSidebar);
+
+    // 3. Tìm kiếm và lọc thẻ Problem Vault theo từ khóa
+    function filterVaultCards() {
+      const query = document.getElementById('vaultSearchInput').value.toLowerCase().trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      const cards = document.querySelectorAll('.vault-card');
+
+      if (query.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const tags = (card.getAttribute('data-tags') || '').toLowerCase();
+        const title = (card.getAttribute('data-title') || '').toLowerCase();
+
+        if (text.includes(query) || tags.includes(query) || title.includes(query)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function clearVaultSearch() {
+      document.getElementById('vaultSearchInput').value = '';
+      filterVaultCards();
+    }
+
+    // 4. Lọc Problem Vault theo Tag
+    function filterVaultByTag(tag) {
+      switchTab('vault');
+
+      // Update chip style
+      document.querySelectorAll('.vault-tag-chip').forEach(chip => {
+        chip.classList.remove('bg-slate-900', 'text-white');
+        chip.classList.add('bg-slate-100', 'text-slate-700');
+      });
+
+      // Highlight active chip
+      const matchedChip = Array.from(document.querySelectorAll('.vault-tag-chip')).find(chip => {
+        return chip.textContent.includes(tag) || (tag === 'all' && chip.textContent.includes('Tất cả'));
+      });
+      if (matchedChip) {
+        matchedChip.classList.remove('bg-slate-100', 'text-slate-700');
+        matchedChip.classList.add('bg-slate-900', 'text-white');
+      }
+
+      const cards = document.querySelectorAll('.vault-card');
+      cards.forEach(card => {
+        const cardTags = card.getAttribute('data-tags') || '';
+        if (tag === 'all' || cardTags.toLowerCase().includes(tag.toLowerCase())) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // 5. Modals (Anki & Quick Add)
+    function previewAnkiExport(title) {
+      document.getElementById('ankiModalTitle').textContent = `Thẻ: ${title}`;
+      document.getElementById('ankiModal').classList.remove('hidden');
+    }
+
+    function closeAnkiModal() {
+      document.getElementById('ankiModal').classList.add('hidden');
+    }
+
+    function openQuickAddModal(type) {
+      const modal = document.getElementById('quickAddModal');
+      const title = document.getElementById('quickAddModalTitle');
+      if (type === 'vault') {
+        title.textContent = 'Thêm câu hỏi khó vào Vault';
+      } else {
+        title.textContent = 'Thêm đề thi / Bài tập mới';
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeQuickAddModal() {
+      document.getElementById('quickAddModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
