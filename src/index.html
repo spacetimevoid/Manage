@@ -726,11 +726,11 @@
 
 
   <!-- ======================================================== -->
-  <!-- MODAL: PROBLEM DETAIL & CAROUSEL REVIEW                  -->
+  <!-- MODAL: PROBLEM DETAIL MODAL (CAROUSEL & SPLIT-VIEW)      -->
   <!-- ======================================================== -->
-  <div id="problemDetailModal" class="fixed inset-0 z-[80] bg-black/85 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-6" onclick="if(event.target === this) closeProblemDetailModal();">
+  <div id="problemDetailModal" class="fixed inset-0 z-[80] bg-black/85 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4" onclick="if(event.target === this) closeProblemDetailModal();">
     
-    <div class="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#242424] border border-[#383838] rounded-2xl shadow-2xl overflow-hidden">
+    <div id="problemDetailFrame" class="relative w-[96vw] max-w-[1550px] h-[92vh] flex flex-col bg-[#242424] border border-[#383838] rounded-2xl shadow-2xl overflow-hidden select-text">
       
       <!-- Top Modal Header -->
       <div class="h-14 px-4 sm:px-6 bg-[#212121] border-b border-[#333333] flex items-center justify-between shrink-0">
@@ -741,8 +741,23 @@
           <span id="problemDetailSourceTitle" class="text-xs font-semibold text-gray-200 truncate max-w-[180px] sm:max-w-md">Source Exam</span>
         </div>
 
-        <!-- Right: Header Controls (Prev/Next buttons & Close) -->
+        <!-- Right: Header Controls (Toggle Solution, Prev/Next buttons, Close) -->
         <div class="flex items-center space-x-2 shrink-0">
+          
+          <!-- Toggle Solution Split View Button -->
+          <button 
+            id="toggleSolutionSplitBtn" 
+            onclick="toggleSolutionSplitView()" 
+            class="px-2.5 py-1 rounded-lg text-xs font-medium border border-[#3a3a3a] bg-[#1e1e1e] hover:bg-[#2e2e2e] text-gray-300 hover:text-white transition flex items-center space-x-1.5 cursor-pointer shadow-xs" 
+            title="Toggle Split View to compare Problem and Solution (Shortcut: S)"
+          >
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="12" y1="3" x2="12" y2="21"></line>
+            </svg>
+            <span id="toggleSolutionBtnText">Solution View</span>
+          </button>
+
           <!-- Compact Prev/Next buttons in header for all screens -->
           <div class="flex items-center space-x-1 bg-[#1a1a1a] p-0.5 rounded-lg border border-[#333333]">
             <button id="problemDetailHeaderPrevBtn" onclick="prevProblem()" class="px-2.5 py-1 rounded text-xs text-gray-300 hover:text-white hover:bg-[#2e2e2e] transition disabled:opacity-25 disabled:pointer-events-none flex items-center space-x-1 cursor-pointer" title="Previous problem (Left Arrow)">
@@ -765,33 +780,177 @@
         </div>
       </div>
 
-      <!-- Main Body: Two Columns (Image on Left, Info & Notes on Right) -->
-      <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-y-auto md:overflow-hidden bg-[#1f1f1f]">
+      <!-- Main Body Container -->
+      <div id="problemDetailBodyContainer" class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden bg-[#1f1f1f] relative">
         
-        <!-- Left Column: Large Image Showcase -->
-        <div class="w-full md:w-3/5 min-h-[260px] md:min-h-0 bg-[#161616] p-4 sm:p-6 flex items-center justify-center relative overflow-hidden border-b md:border-b-0 md:border-r border-[#333333]">
-          <!-- Cropped Question Image -->
-          <img id="problemDetailImg" src="" alt="Question Snippet" class="max-h-[50vh] md:max-h-[68vh] w-auto max-w-full object-contain rounded-lg shadow-xl select-text">
+        <!-- Left Panel: Problem Image -->
+        <div id="problemLeftPanel" class="flex-1 min-h-[300px] md:min-h-0 bg-[#161616] p-4 sm:p-6 flex flex-col items-center justify-center relative overflow-hidden select-none border-b md:border-b-0 md:border-r border-[#333333]">
+          
+          <!-- Image Box with Click to Zoom -->
+          <div class="relative w-full h-full flex items-center justify-center overflow-hidden">
+            <img 
+              id="problemDetailImg" 
+              src="" 
+              alt="Question Snippet" 
+              onclick="openProblemImageZoom()"
+              class="max-h-full max-w-full object-contain rounded-lg shadow-xl cursor-zoom-in transition-transform duration-150 hover:brightness-105"
+              title="Click to Zoom Fullscreen"
+            >
 
-          <!-- No image fallback -->
-          <div id="problemDetailNoImg" class="hidden text-center space-y-2 p-8 text-gray-500">
-            <div class="w-12 h-12 rounded-xl bg-[#222222] border border-[#333] mx-auto flex items-center justify-center text-gray-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <!-- No image fallback -->
+            <div id="problemDetailNoImg" class="hidden text-center space-y-2 p-8 text-gray-500">
+              <div class="w-12 h-12 rounded-xl bg-[#222222] border border-[#333] mx-auto flex items-center justify-center text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="text-xs font-medium text-gray-400">No snippet image attached</div>
+              <div class="text-[11px] text-gray-500">This problem contains text notes only.</div>
             </div>
-            <div class="text-xs font-medium text-gray-400">No snippet image attached</div>
-            <div class="text-[11px] text-gray-500">This problem contains text notes only.</div>
           </div>
 
-          <!-- Open in new tab icon button -->
-          <a id="problemDetailExternalImgBtn" href="#" target="_blank" class="absolute bottom-3 right-3 p-1.5 rounded-md bg-[#242424]/80 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow" title="Open full resolution in new tab">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
+          <!-- Bottom Floating Toolbar for Problem Image -->
+          <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none">
+            <!-- Left tag/label -->
+            <div class="pointer-events-auto flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#242424]/90 border border-[#3a3a3a] text-[11px] text-gray-300 shadow">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span class="font-medium">Problem</span>
+            </div>
+
+            <!-- Right action buttons: Add Solution, Zoom, Open External -->
+            <div class="pointer-events-auto flex items-center space-x-1.5">
+              <button 
+                id="problemAddSolutionQuickBtn" 
+                onclick="triggerAddSolution()" 
+                class="px-2.5 py-1 rounded-md bg-[#242424]/90 hover:bg-[#333333] border border-[#3a3a3a] text-gray-300 hover:text-white transition shadow flex items-center space-x-1 text-xs cursor-pointer" 
+                title="Add Solution Image"
+              >
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add Solution</span>
+              </button>
+
+              <button 
+                onclick="openProblemImageZoom()" 
+                class="p-1.5 rounded-md bg-[#242424]/90 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow cursor-pointer" 
+                title="Zoom Fullscreen"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                </svg>
+              </button>
+
+              <a 
+                id="problemDetailExternalImgBtn" 
+                href="#" 
+                target="_blank" 
+                class="p-1.5 rounded-md bg-[#242424]/90 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow" 
+                title="Open full resolution in new tab"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Right Column: Metadata & Notes -->
-        <div class="w-full md:w-2/5 p-5 sm:p-6 flex flex-col justify-between bg-[#242424] overflow-y-auto space-y-4">
+        <!-- Draggable Resizer Divider (Split-view only) -->
+        <div 
+          id="solutionSplitter" 
+          class="hidden w-2 hover:w-2.5 bg-[#2a2a2a] hover:bg-red-600 active:bg-red-600 cursor-col-resize select-none shrink-0 border-x border-[#383838] transition-colors relative z-20 items-center justify-center group"
+          title="Drag left or right to resize split-view"
+        >
+          <!-- Center grip pill indicator -->
+          <div class="w-1 h-8 rounded-full bg-gray-500 group-hover:bg-white group-active:bg-white transition-colors"></div>
+        </div>
+
+        <!-- Right Panel: Solution Image Showcase (Split-view only) -->
+        <div id="solutionRightPanel" class="hidden flex-1 min-h-[300px] md:min-h-0 bg-[#141414] p-4 sm:p-6 flex flex-col items-center justify-center relative overflow-hidden select-none">
+          
+          <!-- Image Box with Click to Zoom -->
+          <div id="solutionImgContainer" class="relative w-full h-full flex items-center justify-center overflow-hidden">
+            <img 
+              id="solutionDetailImg" 
+              src="" 
+              alt="Solution Image" 
+              onclick="openSolutionImageZoom()"
+              class="max-h-full max-w-full object-contain rounded-lg shadow-xl cursor-zoom-in transition-transform duration-150 hover:brightness-105"
+              title="Click to Zoom Fullscreen"
+            >
+          </div>
+
+          <!-- Empty Solution Drop Zone State -->
+          <div id="solutionEmptyState" class="hidden text-center space-y-3 p-8 max-w-md">
+            <div class="w-14 h-14 rounded-2xl bg-[#1e1e1e] border border-[#333333] mx-auto flex items-center justify-center text-emerald-400 shadow-md">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-semibold text-gray-200">No Solution Image Attached</h4>
+              <p class="text-xs text-gray-400">Upload a full solution image or capture directly with the screenshot tool.</p>
+            </div>
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
+              <button 
+                onclick="triggerAddSolution()" 
+                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition shadow flex items-center space-x-1.5 cursor-pointer"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Upload Solution Image</span>
+              </button>
+              <button 
+                onclick="startScreenCropForSolution()" 
+                class="px-3 py-1.5 rounded-lg bg-[#2e2e2e] hover:bg-[#383838] border border-[#3e3e3e] text-gray-200 text-xs font-medium transition flex items-center space-x-1.5 cursor-pointer"
+              >
+                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Take Screenshot</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Floating Toolbar for Solution Image -->
+          <div id="solutionToolbar" class="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none">
+            <!-- Left tag/label -->
+            <div class="pointer-events-auto flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-[#242424]/90 border border-[#3a3a3a] text-[11px] text-gray-300 shadow">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="font-medium">Solution</span>
+            </div>
+
+            <!-- Right actions -->
+            <div class="pointer-events-auto flex items-center space-x-1.5">
+              <button 
+                onclick="triggerAddSolution()" 
+                class="p-1.5 rounded-md bg-[#242424]/90 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow cursor-pointer" 
+                title="Replace Solution Image"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              </button>
+
+              <button 
+                onclick="openSolutionImageZoom()" 
+                class="p-1.5 rounded-md bg-[#242424]/90 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow cursor-pointer" 
+                title="Zoom Solution Fullscreen"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                </svg>
+              </button>
+
+              <button 
+                onclick="removeCurrentSolutionImage()" 
+                class="p-1.5 rounded-md bg-[#242424]/90 hover:bg-red-900/60 border border-[#3a3a3a] text-gray-400 hover:text-red-400 transition shadow cursor-pointer" 
+                title="Remove Solution Image"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Panel: Metadata & Notes (Default Mode Only) -->
+        <div id="problemNotesPanel" class="w-full md:w-[32%] p-5 sm:p-6 flex flex-col justify-between bg-[#242424] overflow-y-auto space-y-4 shrink-0">
           <div class="space-y-4">
             
             <!-- Tags & Subjects -->
@@ -848,7 +1007,7 @@
       <button 
         id="problemDetailPrevBtn" 
         onclick="prevProblem()" 
-        class="absolute -left-16 top-1/2 -translate-y-1/2 hidden xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
+        class="absolute -left-16 top-1/2 -translate-y-1/2 hidden 2xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
         title="Previous Problem (Left Arrow)"
       >
         <svg class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -859,7 +1018,7 @@
       <button 
         id="problemDetailNextBtn" 
         onclick="nextProblem()" 
-        class="absolute -right-16 top-1/2 -translate-y-1/2 hidden xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
+        class="absolute -right-16 top-1/2 -translate-y-1/2 hidden 2xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
         title="Next Problem (Right Arrow)"
       >
         <svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -869,6 +1028,45 @@
 
     </div>
 
+    <!-- Hidden Input for Uploading Solution Image -->
+    <input type="file" id="solutionFileInput" accept="image/*" class="hidden" onchange="handleSolutionFileInputChange(event)">
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: FULLSCREEN PAN & ZOOM LIGHTBOX                   -->
+  <!-- ======================================================== -->
+  <div id="imageZoomModal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md hidden flex flex-col select-none" onclick="if(event.target === this) closeImageZoom();">
+    
+    <!-- Top Zoom Bar -->
+    <div class="h-14 px-4 sm:px-6 bg-[#1a1a1a]/95 border-b border-[#333333] flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center space-x-3">
+        <span id="zoomModalTitle" class="text-sm font-semibold text-gray-200">Image Viewer</span>
+        <span id="zoomLevelIndicator" class="px-2 py-0.5 rounded bg-black/50 border border-gray-700 text-xs font-mono text-gray-400">100%</span>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="flex items-center space-x-2">
+        <button onclick="zoomOut()" class="p-1.5 rounded-lg bg-[#242424] hover:bg-[#333333] text-gray-300 hover:text-white transition cursor-pointer" title="Zoom Out (-)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+        </button>
+        <button onclick="resetZoom()" class="px-2.5 py-1 rounded-lg bg-[#242424] hover:bg-[#333333] text-xs font-mono text-gray-300 hover:text-white transition cursor-pointer" title="Reset Zoom (0)">
+          Fit / 100%
+        </button>
+        <button onclick="zoomIn()" class="p-1.5 rounded-lg bg-[#242424] hover:bg-[#333333] text-gray-300 hover:text-white transition cursor-pointer" title="Zoom In (+)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <div class="w-px h-5 bg-[#333333] mx-1"></div>
+        <button onclick="closeImageZoom()" class="p-1.5 rounded-lg bg-[#242424] hover:bg-[#333333] text-gray-400 hover:text-white transition cursor-pointer" title="Close (Esc)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Zoom Canvas Viewport -->
+    <div id="zoomViewport" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing">
+      <img id="zoomTargetImg" src="" alt="Zoomable Preview" class="max-w-none transition-transform duration-75 select-none pointer-events-none" style="transform: translate(0px, 0px) scale(1);">
+    </div>
   </div>
 
 
@@ -1516,6 +1714,10 @@
 
       // Initialize In-Browser Snipping Events
       initSnippingEvents();
+
+      // Initialize Solution Splitter & Pan/Zoom Lightbox Events
+      initSolutionSplitter();
+      initImageZoomEvents();
 
       // Listen to Auth State Changes
       if (window.supabaseClient && window.supabaseClient.auth) {
@@ -2420,8 +2622,10 @@
     // -------------------------------------------------------------
     let _rawCaptureCanvas = null;
     let _snipRect = { startX: 0, startY: 0, curX: 0, curY: 0, isDrawing: false, hasSelection: false };
+    let _snipTarget = 'problem'; // 'problem' or 'solution'
 
     async function startScreenCrop() {
+      _snipTarget = 'problem';
       // Ensure target source is established
       if (!activeWorkspaceSourceId) {
         const select = document.getElementById('snippetSourceSelect');
@@ -2431,10 +2635,19 @@
           activeWorkspaceSourceId = currentSources[0].id;
         }
       }
+      await runScreenCaptureProcess();
+    }
 
+    async function startScreenCropForSolution() {
+      _snipTarget = 'solution';
+      await runScreenCaptureProcess();
+    }
+
+    async function runScreenCaptureProcess() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        showToast('Direct screen capture is not supported on this browser. Use Cmd+V to paste.', 4000);
-        openCropFromCurrentSource();
+        showToast('Direct screen capture is not supported on this browser.', 4000);
+        if (_snipTarget === 'solution') triggerAddSolution();
+        else openCropFromCurrentSource();
         return;
       }
 
@@ -2533,6 +2746,7 @@
       _rawCaptureCanvas = null;
       _snipRect.isDrawing = false;
       _snipRect.hasSelection = false;
+      _snipTarget = 'problem';
     }
 
     function initSnippingEvents() {
@@ -2678,14 +2892,25 @@
       const cropCtx = cropCanvas.getContext('2d');
       cropCtx.drawImage(_rawCaptureCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
 
-      cropCanvas.toBlob((blob) => {
+      cropCanvas.toBlob(async (blob) => {
         if (!blob) {
           showToast('Failed to generate cropped image.');
           return;
         }
 
-        const fileName = `crop_${Date.now()}.png`;
+        const isSolution = _snipTarget === 'solution';
+        const fileName = `${isSolution ? 'solution' : 'crop'}_${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
+
+        if (isSolution) {
+          cancelSnipping();
+          const p = currentDetailProblemList[currentProblemDetailIndex];
+          if (p) {
+            await saveSolutionImageForCurrentProblem(file);
+          }
+          _snipTarget = 'problem';
+          return;
+        }
 
         const input = document.getElementById('snippetImageInput');
         if (input) {
@@ -2698,7 +2923,7 @@
 
         cancelSnipping();
         openCropFromCurrentSource();
-        showToast('✨ Snippet cropped successfully! Add tags and save.');
+        showToast('Snippet cropped successfully. Add tags and save.');
       }, 'image/png');
     }
 
@@ -3030,7 +3255,7 @@
         }
       }
 
-      // 3. Image Showcase
+      // 3. Problem Image Showcase
       const imgElem = document.getElementById('problemDetailImg');
       const noImgElem = document.getElementById('problemDetailNoImg');
       const openExternalBtn = document.getElementById('problemDetailExternalImgBtn');
@@ -3054,13 +3279,38 @@
         if (openExternalBtn) openExternalBtn.classList.add('hidden');
       }
 
-      // 4. Notes & Solution
+      // 4. Solution Image Showcase
+      const solutionImageSrc = p.solution_image_path || localStorage.getItem('solution_' + p.id) || '';
+      const solutionImgElem = document.getElementById('solutionDetailImg');
+      const solutionImgContainer = document.getElementById('solutionImgContainer');
+      const solutionEmptyState = document.getElementById('solutionEmptyState');
+      const solutionToolbar = document.getElementById('solutionToolbar');
+
+      if (solutionImageSrc) {
+        if (solutionImgElem) {
+          solutionImgElem.src = solutionImageSrc;
+          solutionImgElem.classList.remove('hidden');
+        }
+        if (solutionImgContainer) solutionImgContainer.classList.remove('hidden');
+        if (solutionEmptyState) solutionEmptyState.classList.add('hidden');
+        if (solutionToolbar) solutionToolbar.classList.remove('hidden');
+      } else {
+        if (solutionImgElem) {
+          solutionImgElem.src = '';
+          solutionImgElem.classList.add('hidden');
+        }
+        if (solutionImgContainer) solutionImgContainer.classList.add('hidden');
+        if (solutionEmptyState) solutionEmptyState.classList.remove('hidden');
+        if (solutionToolbar) solutionToolbar.classList.add('hidden');
+      }
+
+      // 5. Notes & Solution Text (in Right Notes Panel)
       const notesElem = document.getElementById('problemDetailNotes');
       if (notesElem) {
         notesElem.textContent = p.note_text || 'No formula notes or mistake resolution attached.';
       }
 
-      // 5. Metadata Info
+      // 6. Metadata Info
       const dateElem = document.getElementById('problemDetailDate');
       if (dateElem && p.created_at) {
         const d = new Date(p.created_at);
@@ -3072,7 +3322,7 @@
         ankiStatusElem.textContent = p.anki_exported ? 'Synced to Anki' : 'Vault Ready';
       }
 
-      // 6. Action Buttons
+      // 7. Action Buttons
       const ankiBtn = document.getElementById('problemDetailAnkiBtn');
       if (ankiBtn) {
         ankiBtn.onclick = () => previewAnkiCard(sourceTitle, p.note_text || '');
@@ -3083,7 +3333,7 @@
         delBtn.onclick = () => deleteProblemFromDetail(p.id);
       }
 
-      // 7. Navigation States (Prev / Next Buttons)
+      // 8. Navigation States (Prev / Next Buttons)
       const isFirst = currentProblemDetailIndex === 0;
       const isLast = currentProblemDetailIndex === total - 1;
 
@@ -3121,7 +3371,9 @@
     function closeProblemDetailModal() {
       const modal = document.getElementById('problemDetailModal');
       if (modal) modal.classList.add('hidden');
+      closeImageZoom();
       document.body.classList.remove('overflow-hidden');
+      isResizingSolution = false;
     }
 
     async function deleteProblemFromDetail(problemId) {
@@ -3138,10 +3390,366 @@
       }
     }
 
-    // Keyboard Accessibility for Problem Detail Modal (Left/Right Arrow, Escape)
+    // -------------------------------------------------------------
+    // 6C. SOLUTION IMAGE MANAGEMENT & SCREENSHOT CAPTURE
+    // -------------------------------------------------------------
+    function triggerAddSolution() {
+      const fileInput = document.getElementById('solutionFileInput');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+    }
+
+    async function handleSolutionFileInputChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      await saveSolutionImageForCurrentProblem(file);
+    }
+
+    async function saveSolutionImageForCurrentProblem(file) {
+      const p = currentDetailProblemList[currentProblemDetailIndex];
+      if (!p) return;
+
+      showToast('Saving solution image...');
+
+      try {
+        let imagePath = null;
+        const cleanName = `solution_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+        // Upload to Supabase bucket if connected
+        try {
+          if (supabase && supabase.storage) {
+            const { data: upData, error: upErr } = await supabase.storage
+              .from('problem_snippets')
+              .upload(cleanName, file);
+            if (!upErr && upData) {
+              const { data: publicUrlData } = supabase.storage
+                .from('problem_snippets')
+                .getPublicUrl(cleanName);
+              imagePath = publicUrlData ? publicUrlData.publicUrl : cleanName;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Storage upload error:', storageErr);
+        }
+
+        // Fallback: DataURL if storage bucket isn't reachable
+        if (!imagePath) {
+          imagePath = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Try updating database record
+        try {
+          if (supabase) {
+            const { error: dbErr } = await supabase
+              .from('problems')
+              .update({ solution_image_path: imagePath })
+              .eq('id', p.id);
+            if (dbErr) console.warn('Supabase DB update warning:', dbErr);
+          }
+        } catch (dbErr) {
+          console.warn('DB error:', dbErr);
+        }
+
+        // Cache in localStorage by problem ID for instant offline persistence
+        try {
+          localStorage.setItem('solution_' + p.id, imagePath);
+        } catch (lsErr) {
+          console.warn('LocalStorage error:', lsErr);
+        }
+
+        p.solution_image_path = imagePath;
+        const masterP = currentProblems.find(item => item.id === p.id);
+        if (masterP) masterP.solution_image_path = imagePath;
+
+        // Auto-switch to Split-View so user immediately compares problem and solution side-by-side
+        toggleSolutionSplitView(true);
+        renderProblemDetailModal();
+        showToast('Solution image saved successfully!');
+      } catch (err) {
+        console.error('Save solution error:', err);
+        showToast('Failed to save solution image: ' + (err.message || err));
+      }
+    }
+
+    async function removeCurrentSolutionImage() {
+      const p = currentDetailProblemList[currentProblemDetailIndex];
+      if (!p) return;
+      if (!confirm('Remove solution image for this question?')) return;
+
+      try {
+        if (supabase) {
+          await supabase.from('problems').update({ solution_image_path: null }).eq('id', p.id);
+        }
+      } catch (err) {
+        console.warn('DB error:', err);
+      }
+
+      try {
+        localStorage.removeItem('solution_' + p.id);
+      } catch (e) {}
+
+      p.solution_image_path = null;
+      const masterP = currentProblems.find(item => item.id === p.id);
+      if (masterP) masterP.solution_image_path = null;
+
+      renderProblemDetailModal();
+      showToast('Solution image removed.');
+    }
+
+    // -------------------------------------------------------------
+    // 6D. RESIZABLE SPLIT-VIEW (PROBLEM & SOLUTION)
+    // -------------------------------------------------------------
+    let isSolutionSplitViewActive = false;
+    let isResizingSolution = false;
+    let solutionSplitPct = 50;
+
+    function toggleSolutionSplitView(forceState = null) {
+      if (forceState !== null) {
+        isSolutionSplitViewActive = forceState;
+      } else {
+        isSolutionSplitViewActive = !isSolutionSplitViewActive;
+      }
+
+      const problemNotesPanel = document.getElementById('problemNotesPanel');
+      const solutionSplitter = document.getElementById('solutionSplitter');
+      const solutionRightPanel = document.getElementById('solutionRightPanel');
+      const problemLeftPanel = document.getElementById('problemLeftPanel');
+      const btn = document.getElementById('toggleSolutionSplitBtn');
+      const btnText = document.getElementById('toggleSolutionBtnText');
+
+      if (!problemNotesPanel || !solutionSplitter || !solutionRightPanel || !problemLeftPanel) return;
+
+      if (isSolutionSplitViewActive) {
+        problemNotesPanel.classList.add('hidden');
+        solutionSplitter.classList.remove('hidden');
+        solutionSplitter.classList.add('flex');
+        solutionRightPanel.classList.remove('hidden');
+        solutionRightPanel.classList.add('flex');
+
+        if (btn) {
+          btn.classList.add('bg-emerald-600/20', 'border-emerald-500', 'text-emerald-300');
+          btn.classList.remove('bg-[#1e1e1e]', 'border-[#3a3a3a]', 'text-gray-300');
+        }
+        if (btnText) btnText.textContent = 'Single View';
+
+        const savedPct = parseFloat(localStorage.getItem('studyvault_solution_split_pct')) || 50;
+        applySolutionSplitWidth(savedPct);
+      } else {
+        problemNotesPanel.classList.remove('hidden');
+        solutionSplitter.classList.add('hidden');
+        solutionSplitter.classList.remove('flex');
+        solutionRightPanel.classList.add('hidden');
+        solutionRightPanel.classList.remove('flex');
+
+        if (btn) {
+          btn.classList.remove('bg-emerald-600/20', 'border-emerald-500', 'text-emerald-300');
+          btn.classList.add('bg-[#1e1e1e]', 'border-[#3a3a3a]', 'text-gray-300');
+        }
+        if (btnText) btnText.textContent = 'Solution View';
+
+        problemLeftPanel.style.flex = '';
+        problemLeftPanel.style.width = '';
+        solutionRightPanel.style.flex = '';
+        solutionRightPanel.style.width = '';
+      }
+    }
+
+    function applySolutionSplitWidth(pct) {
+      const problemLeftPanel = document.getElementById('problemLeftPanel');
+      const solutionRightPanel = document.getElementById('solutionRightPanel');
+      if (!problemLeftPanel || !solutionRightPanel) return;
+
+      solutionSplitPct = pct;
+      problemLeftPanel.style.flex = `0 0 ${pct}%`;
+      problemLeftPanel.style.width = `${pct}%`;
+      solutionRightPanel.style.flex = `0 0 ${100 - pct}%`;
+      solutionRightPanel.style.width = `${100 - pct}%`;
+      localStorage.setItem('studyvault_solution_split_pct', pct);
+    }
+
+    function initSolutionSplitter() {
+      const splitter = document.getElementById('solutionSplitter');
+      const container = document.getElementById('problemDetailBodyContainer');
+
+      if (!splitter || !container) return;
+
+      splitter.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingSolution = true;
+        document.body.classList.add('select-none');
+        document.body.style.cursor = 'col-resize';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizingSolution) return;
+        const rect = container.getBoundingClientRect();
+        if (rect.width <= 0) return;
+
+        let pct = ((e.clientX - rect.left) / rect.width) * 100;
+        pct = Math.min(Math.max(pct, 20), 80);
+        applySolutionSplitWidth(pct);
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizingSolution) {
+          isResizingSolution = false;
+          document.body.classList.remove('select-none');
+          document.body.style.cursor = '';
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 6E. FULLSCREEN PAN & ZOOM LIGHTBOX
+    // -------------------------------------------------------------
+    let zoomScale = 1;
+    let zoomTranslateX = 0;
+    let zoomTranslateY = 0;
+    let isPanningZoom = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    function openProblemImageZoom() {
+      const p = currentDetailProblemList[currentProblemDetailIndex];
+      const src = p && p.image_path ? p.image_path : '';
+      if (!src) return;
+      const title = (p.sources && p.sources.title) ? `Problem • ${p.sources.title}` : 'Problem Snippet';
+      openImageZoom(src, title);
+    }
+
+    function openSolutionImageZoom() {
+      const p = currentDetailProblemList[currentProblemDetailIndex];
+      const src = (p && p.solution_image_path) || (p && localStorage.getItem('solution_' + p.id)) || '';
+      if (!src) return;
+      const title = (p.sources && p.sources.title) ? `Solution • ${p.sources.title}` : 'Solution View';
+      openImageZoom(src, title);
+    }
+
+    function openImageZoom(src, title = 'Image Viewer') {
+      const modal = document.getElementById('imageZoomModal');
+      const targetImg = document.getElementById('zoomTargetImg');
+      const titleElem = document.getElementById('zoomModalTitle');
+      if (!modal || !targetImg) return;
+
+      targetImg.src = src;
+      if (titleElem) titleElem.textContent = title;
+
+      resetZoom();
+      modal.classList.remove('hidden');
+    }
+
+    function closeImageZoom() {
+      const modal = document.getElementById('imageZoomModal');
+      if (modal) modal.classList.add('hidden');
+      resetZoom();
+    }
+
+    function resetZoom() {
+      zoomScale = 1;
+      zoomTranslateX = 0;
+      zoomTranslateY = 0;
+      applyZoomTransform();
+    }
+
+    function zoomIn() {
+      zoomScale = Math.min(zoomScale * 1.25, 6.0);
+      applyZoomTransform();
+    }
+
+    function zoomOut() {
+      zoomScale = Math.max(zoomScale / 1.25, 0.4);
+      applyZoomTransform();
+    }
+
+    function applyZoomTransform() {
+      const targetImg = document.getElementById('zoomTargetImg');
+      const indicator = document.getElementById('zoomLevelIndicator');
+      if (targetImg) {
+        targetImg.style.transform = `translate(${zoomTranslateX}px, ${zoomTranslateY}px) scale(${zoomScale})`;
+      }
+      if (indicator) {
+        indicator.textContent = `${Math.round(zoomScale * 100)}%`;
+      }
+    }
+
+    function initImageZoomEvents() {
+      const viewport = document.getElementById('zoomViewport');
+      if (!viewport) return;
+
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          zoomScale = Math.min(zoomScale * 1.15, 6.0);
+        } else {
+          zoomScale = Math.max(zoomScale / 1.15, 0.4);
+        }
+        applyZoomTransform();
+      }, { passive: false });
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        isPanningZoom = true;
+        panStartX = e.clientX - zoomTranslateX;
+        panStartY = e.clientY - zoomTranslateY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanningZoom) return;
+        zoomTranslateX = e.clientX - panStartX;
+        zoomTranslateY = e.clientY - panStartY;
+        applyZoomTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isPanningZoom = false;
+      });
+
+      viewport.addEventListener('dblclick', () => {
+        if (zoomScale > 1.2) {
+          resetZoom();
+        } else {
+          zoomScale = 2.0;
+          applyZoomTransform();
+        }
+      });
+    }
+
+    // Keyboard Accessibility for Problem Detail Modal & Pan/Zoom
     window.addEventListener('keydown', (e) => {
+      const zoomModal = document.getElementById('imageZoomModal');
+      const isZoomOpen = zoomModal && !zoomModal.classList.contains('hidden');
+
+      if (isZoomOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeImageZoom();
+          return;
+        } else if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          zoomIn();
+          return;
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          zoomOut();
+          return;
+        } else if (e.key === '0') {
+          e.preventDefault();
+          resetZoom();
+          return;
+        }
+      }
+
       const modal = document.getElementById('problemDetailModal');
       if (!modal || modal.classList.contains('hidden')) return;
+
+      // Don't trigger shortcuts if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -3152,6 +3760,9 @@
       } else if (e.key === 'Escape') {
         e.preventDefault();
         closeProblemDetailModal();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        toggleSolutionSplitView();
       }
     });
 

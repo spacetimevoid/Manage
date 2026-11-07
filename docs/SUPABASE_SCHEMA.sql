@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.problems (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES public.sources(id) ON DELETE CASCADE,
     image_path TEXT,                        -- Storage path inside 'problem_snippets' bucket
+    solution_image_path TEXT,               -- Storage path or URL for detailed solution image
     tags TEXT[] DEFAULT '{}',               -- Array of tags, e.g. ARRAY['Mathematics', 'Advanced', 'Geometry']
     note_text TEXT,                         -- Key insight, mistake note, or solution summary
     anki_exported BOOLEAN DEFAULT FALSE,    -- Flag indicating if synced/exported to Anki
@@ -137,5 +138,6 @@ WITH CHECK (bucket_id = 'problem_snippets');
 -- ==============================================================================
 ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
 ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.problems ADD COLUMN IF NOT EXISTS solution_image_path TEXT;
 
 
