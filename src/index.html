@@ -726,6 +726,153 @@
 
 
   <!-- ======================================================== -->
+  <!-- MODAL: PROBLEM DETAIL & CAROUSEL REVIEW                  -->
+  <!-- ======================================================== -->
+  <div id="problemDetailModal" class="fixed inset-0 z-[80] bg-black/85 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-6" onclick="if(event.target === this) closeProblemDetailModal();">
+    
+    <div class="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#242424] border border-[#383838] rounded-2xl shadow-2xl overflow-hidden">
+      
+      <!-- Top Modal Header -->
+      <div class="h-14 px-4 sm:px-6 bg-[#212121] border-b border-[#333333] flex items-center justify-between shrink-0">
+        <!-- Left: Counter, Subject, Source Title -->
+        <div class="flex items-center space-x-2.5 min-w-0">
+          <span id="problemDetailCounter" class="px-2.5 py-0.5 rounded-full bg-black/50 border border-[#3e3e3e] text-[11px] font-mono text-gray-300 shrink-0 font-medium">Question 1 of 1</span>
+          <span id="problemDetailSubjectBadge" class="hidden sm:inline-block px-2 py-0.5 rounded bg-[#2e2e2e] text-[11px] font-mono text-gray-400 shrink-0">#General</span>
+          <span id="problemDetailSourceTitle" class="text-xs font-semibold text-gray-200 truncate max-w-[180px] sm:max-w-md">Source Exam</span>
+        </div>
+
+        <!-- Right: Header Controls (Prev/Next buttons & Close) -->
+        <div class="flex items-center space-x-2 shrink-0">
+          <!-- Compact Prev/Next buttons in header for all screens -->
+          <div class="flex items-center space-x-1 bg-[#1a1a1a] p-0.5 rounded-lg border border-[#333333]">
+            <button id="problemDetailHeaderPrevBtn" onclick="prevProblem()" class="px-2.5 py-1 rounded text-xs text-gray-300 hover:text-white hover:bg-[#2e2e2e] transition disabled:opacity-25 disabled:pointer-events-none flex items-center space-x-1 cursor-pointer" title="Previous problem (Left Arrow)">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              <span class="hidden sm:inline">Prev</span>
+            </button>
+            <div class="w-px h-3.5 bg-[#333333]"></div>
+            <button id="problemDetailHeaderNextBtn" onclick="nextProblem()" class="px-2.5 py-1 rounded text-xs text-gray-300 hover:text-white hover:bg-[#2e2e2e] transition disabled:opacity-25 disabled:pointer-events-none flex items-center space-x-1 cursor-pointer" title="Next problem (Right Arrow)">
+              <span class="hidden sm:inline">Next</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <!-- Close Button -->
+          <button onclick="closeProblemDetailModal()" class="p-1.5 text-gray-400 hover:text-white hover:bg-[#333333] rounded-lg transition cursor-pointer" title="Close (Esc)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Body: Two Columns (Image on Left, Info & Notes on Right) -->
+      <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-y-auto md:overflow-hidden bg-[#1f1f1f]">
+        
+        <!-- Left Column: Large Image Showcase -->
+        <div class="w-full md:w-3/5 min-h-[260px] md:min-h-0 bg-[#161616] p-4 sm:p-6 flex items-center justify-center relative overflow-hidden border-b md:border-b-0 md:border-r border-[#333333]">
+          <!-- Cropped Question Image -->
+          <img id="problemDetailImg" src="" alt="Question Snippet" class="max-h-[50vh] md:max-h-[68vh] w-auto max-w-full object-contain rounded-lg shadow-xl select-text">
+
+          <!-- No image fallback -->
+          <div id="problemDetailNoImg" class="hidden text-center space-y-2 p-8 text-gray-500">
+            <div class="w-12 h-12 rounded-xl bg-[#222222] border border-[#333] mx-auto flex items-center justify-center text-gray-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="text-xs font-medium text-gray-400">No snippet image attached</div>
+            <div class="text-[11px] text-gray-500">This problem contains text notes only.</div>
+          </div>
+
+          <!-- Open in new tab icon button -->
+          <a id="problemDetailExternalImgBtn" href="#" target="_blank" class="absolute bottom-3 right-3 p-1.5 rounded-md bg-[#242424]/80 hover:bg-[#333333] border border-[#3a3a3a] text-gray-400 hover:text-white transition shadow" title="Open full resolution in new tab">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Right Column: Metadata & Notes -->
+        <div class="w-full md:w-2/5 p-5 sm:p-6 flex flex-col justify-between bg-[#242424] overflow-y-auto space-y-4">
+          <div class="space-y-4">
+            
+            <!-- Tags & Subjects -->
+            <div class="space-y-1.5">
+              <span class="text-[10px] text-gray-400 font-mono uppercase tracking-wider block">Tags &amp; Subjects</span>
+              <div id="problemDetailTags" class="flex flex-wrap gap-1.5">
+                <!-- Dynamically populated tags -->
+              </div>
+            </div>
+
+            <!-- Notes & Solution Section -->
+            <div class="space-y-1.5">
+              <div class="flex items-center space-x-1.5 text-xs font-semibold text-gray-200">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span>Notes &amp; Solution</span>
+              </div>
+              <div id="problemDetailNotes" class="bg-[#1c1c1c] border-l-2 border-emerald-500 rounded-r-lg p-3.5 text-xs text-gray-200 leading-relaxed font-sans select-text whitespace-pre-wrap min-h-[90px]">
+                <!-- Dynamically populated note -->
+              </div>
+            </div>
+
+            <!-- Metadata Info -->
+            <div class="pt-2 border-t border-[#333333] grid grid-cols-2 gap-2 text-[11px] text-gray-400">
+              <div>
+                <span class="block text-gray-500 text-[10px]">Saved Date:</span>
+                <span id="problemDetailDate" class="font-mono text-gray-300">--</span>
+              </div>
+              <div>
+                <span class="block text-gray-500 text-[10px]">Anki Status:</span>
+                <span id="problemDetailAnkiStatus" class="font-mono text-emerald-400">Vault Ready</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="pt-3 border-t border-[#333333] flex items-center justify-between">
+            <button id="problemDetailAnkiBtn" type="button" class="px-3 py-1.5 rounded-lg bg-[#2e2e2e] hover:bg-[#383838] border border-[#3e3e3e] text-xs font-medium text-gray-200 hover:text-white transition flex items-center space-x-1.5 cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>Preview Anki Card</span>
+            </button>
+            <button id="problemDetailDeleteBtn" type="button" class="p-1.5 text-gray-400 hover:text-red-400 rounded-lg hover:bg-[#2e2e2e] transition cursor-pointer" title="Delete Snippet">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Floating Prev/Next Buttons on large desktop screens -->
+      <button 
+        id="problemDetailPrevBtn" 
+        onclick="prevProblem()" 
+        class="absolute -left-16 top-1/2 -translate-y-1/2 hidden xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
+        title="Previous Problem (Left Arrow)"
+      >
+        <svg class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <button 
+        id="problemDetailNextBtn" 
+        onclick="nextProblem()" 
+        class="absolute -right-16 top-1/2 -translate-y-1/2 hidden xl:flex w-12 h-12 rounded-full bg-[#242424]/90 hover:bg-[#333333] border border-[#3e3e3e] text-gray-300 hover:text-white items-center justify-center transition shadow-2xl cursor-pointer group disabled:opacity-20 disabled:pointer-events-none" 
+        title="Next Problem (Right Arrow)"
+      >
+        <svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================== -->
   <!-- MODAL: ADD TASK / SOURCE (Live Supabase Insert)           -->
   <!-- ======================================================== -->
   <div id="quickAddModal" class="fixed inset-0 z-[70] bg-black/75 backdrop-blur-xs hidden flex items-center justify-center p-4">
@@ -1994,7 +2141,7 @@
       list.innerHTML = sourceProblems.map(p => {
         const tags = Array.isArray(p.tags) ? p.tags : [];
         return `
-          <div class="bg-[#262626] rounded-lg border border-[#383838] hover:border-gray-500 p-3 space-y-2.5 transition shadow-xs">
+          <div onclick="openProblemDetailModal('${p.id}')" class="bg-[#262626] rounded-lg border border-[#383838] hover:border-gray-500 p-3 space-y-2.5 transition shadow-xs cursor-pointer">
             ${p.image_path ? `
               <div class="h-28 bg-[#181818] rounded border border-[#333333] flex items-center justify-center overflow-hidden">
                 <img src="${escapeHtml(p.image_path)}" alt="Snippet" class="max-h-full object-contain">
@@ -2014,10 +2161,10 @@
             <div class="flex items-center justify-between pt-1 border-t border-[#333333] text-[10px] text-gray-500">
               <span class="font-mono">${p.anki_exported ? 'Synced to Anki' : 'Vault Ready'}</span>
               <div class="flex items-center space-x-1.5">
-                <button onclick="previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded cursor-pointer" title="Preview Anki Card">
+                <button onclick="event.stopPropagation(); previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded cursor-pointer" title="Preview Anki Card">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </button>
-                <button onclick="deleteProblem('${p.id}')" class="p-1 hover:text-red-400 text-gray-500 transition cursor-pointer" title="Delete Snippet">
+                <button onclick="event.stopPropagation(); deleteProblem('${p.id}')" class="p-1 hover:text-red-400 text-gray-500 transition cursor-pointer" title="Delete Snippet">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
               </div>
@@ -2719,6 +2866,9 @@
         return true;
       });
 
+      // Save active filtered problems for carousel navigation
+      currentFilteredProblems = filtered;
+
       // Render Tag Chips
       if (chipsContainer) {
         const allTagsSet = new Set();
@@ -2757,7 +2907,7 @@
           const imageSrc = p.image_path || '';
 
           return `
-            <div class="vault-card group bg-[#262626] rounded-lg border border-[#333333] hover:border-gray-500 transition-all duration-150 overflow-hidden flex flex-col justify-between shadow-xs">
+            <div onclick="openProblemDetailModal('${p.id}')" class="vault-card group bg-[#262626] rounded-lg border border-[#333333] hover:border-gray-500 hover:shadow-lg transition-all duration-150 overflow-hidden flex flex-col justify-between shadow-xs cursor-pointer">
               <div>
                 <!-- Thumbnail / Placeholder -->
                 <div class="relative bg-[#161616] border-b border-[#333333] p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
@@ -2792,10 +2942,10 @@
               <div class="px-3 py-2 border-t border-[#333333] flex items-center justify-between text-gray-400 text-xs">
                 <span class="text-[10px] text-gray-500">${p.anki_exported ? 'Synced to Anki' : 'Vault Ready'}</span>
                 <div class="flex items-center space-x-1">
-                  <button onclick="previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded" title="Preview Anki Card">
+                  <button onclick="event.stopPropagation(); previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded cursor-pointer" title="Preview Anki Card">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                   </button>
-                  <button onclick="deleteProblem('${p.id}')" class="p-1 hover:text-red-400 text-gray-500 transition" title="Delete snippet">
+                  <button onclick="event.stopPropagation(); deleteProblem('${p.id}')" class="p-1 hover:text-red-400 text-gray-500 transition cursor-pointer" title="Delete snippet">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
                 </div>
@@ -2805,6 +2955,205 @@
         }).join('');
       }
     }
+
+    // -------------------------------------------------------------
+    // 6B. PROBLEM DETAIL MODAL & CAROUSEL NAVIGATION
+    // -------------------------------------------------------------
+    let currentProblemDetailIndex = 0;
+    let currentFilteredProblems = [];
+    let currentDetailProblemList = [];
+
+    function openProblemDetailModal(problemId, customList = null) {
+      if (customList && Array.isArray(customList) && customList.length > 0) {
+        currentDetailProblemList = customList;
+      } else if (currentFilteredProblems && currentFilteredProblems.length > 0) {
+        currentDetailProblemList = currentFilteredProblems;
+      } else {
+        currentDetailProblemList = currentProblems;
+      }
+
+      if (currentDetailProblemList.length === 0) {
+        showToast('No problems available to view.');
+        return;
+      }
+
+      const idx = currentDetailProblemList.findIndex(p => p.id === problemId);
+      currentProblemDetailIndex = idx !== -1 ? idx : 0;
+
+      renderProblemDetailModal();
+
+      const modal = document.getElementById('problemDetailModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+    }
+
+    function renderProblemDetailModal() {
+      if (!currentDetailProblemList || currentDetailProblemList.length === 0) return;
+
+      // Ensure index is within bounds
+      if (currentProblemDetailIndex < 0) currentProblemDetailIndex = 0;
+      if (currentProblemDetailIndex >= currentDetailProblemList.length) {
+        currentProblemDetailIndex = currentDetailProblemList.length - 1;
+      }
+
+      const p = currentDetailProblemList[currentProblemDetailIndex];
+      if (!p) return;
+
+      const total = currentDetailProblemList.length;
+      const currentNum = currentProblemDetailIndex + 1;
+
+      // 1. Counter & Badges
+      const counterElem = document.getElementById('problemDetailCounter');
+      if (counterElem) counterElem.textContent = `Question ${currentNum} of ${total}`;
+
+      const sourceTitle = (p.sources && p.sources.title) ? p.sources.title : 'Study Exam';
+      const sourceSubject = (p.sources && p.sources.subject) ? p.sources.subject : 'General';
+
+      const titleElem = document.getElementById('problemDetailSourceTitle');
+      if (titleElem) titleElem.textContent = sourceTitle;
+
+      const subjectElem = document.getElementById('problemDetailSubjectBadge');
+      if (subjectElem) subjectElem.textContent = `#${sourceSubject}`;
+
+      // 2. Tags
+      const tagsContainer = document.getElementById('problemDetailTags');
+      if (tagsContainer) {
+        const tags = Array.isArray(p.tags) ? p.tags : [];
+        if (tags.length === 0) {
+          tagsContainer.innerHTML = '<span class="text-[11px] text-gray-500 font-mono">No tags</span>';
+        } else {
+          tagsContainer.innerHTML = tags.map(t => `
+            <span class="px-2 py-0.5 rounded bg-[#333333] text-gray-300 text-[11px] font-mono">#${escapeHtml(t)}</span>
+          `).join('');
+        }
+      }
+
+      // 3. Image Showcase
+      const imgElem = document.getElementById('problemDetailImg');
+      const noImgElem = document.getElementById('problemDetailNoImg');
+      const openExternalBtn = document.getElementById('problemDetailExternalImgBtn');
+
+      if (p.image_path) {
+        if (imgElem) {
+          imgElem.src = p.image_path;
+          imgElem.classList.remove('hidden');
+        }
+        if (noImgElem) noImgElem.classList.add('hidden');
+        if (openExternalBtn) {
+          openExternalBtn.href = p.image_path;
+          openExternalBtn.classList.remove('hidden');
+        }
+      } else {
+        if (imgElem) {
+          imgElem.src = '';
+          imgElem.classList.add('hidden');
+        }
+        if (noImgElem) noImgElem.classList.remove('hidden');
+        if (openExternalBtn) openExternalBtn.classList.add('hidden');
+      }
+
+      // 4. Notes & Solution
+      const notesElem = document.getElementById('problemDetailNotes');
+      if (notesElem) {
+        notesElem.textContent = p.note_text || 'No formula notes or mistake resolution attached.';
+      }
+
+      // 5. Metadata Info
+      const dateElem = document.getElementById('problemDetailDate');
+      if (dateElem && p.created_at) {
+        const d = new Date(p.created_at);
+        dateElem.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
+      const ankiStatusElem = document.getElementById('problemDetailAnkiStatus');
+      if (ankiStatusElem) {
+        ankiStatusElem.textContent = p.anki_exported ? 'Synced to Anki' : 'Vault Ready';
+      }
+
+      // 6. Action Buttons
+      const ankiBtn = document.getElementById('problemDetailAnkiBtn');
+      if (ankiBtn) {
+        ankiBtn.onclick = () => previewAnkiCard(sourceTitle, p.note_text || '');
+      }
+
+      const delBtn = document.getElementById('problemDetailDeleteBtn');
+      if (delBtn) {
+        delBtn.onclick = () => deleteProblemFromDetail(p.id);
+      }
+
+      // 7. Navigation States (Prev / Next Buttons)
+      const isFirst = currentProblemDetailIndex === 0;
+      const isLast = currentProblemDetailIndex === total - 1;
+
+      const prevBtns = [
+        document.getElementById('problemDetailPrevBtn'),
+        document.getElementById('problemDetailHeaderPrevBtn')
+      ];
+      prevBtns.forEach(btn => {
+        if (btn) btn.disabled = isFirst;
+      });
+
+      const nextBtns = [
+        document.getElementById('problemDetailNextBtn'),
+        document.getElementById('problemDetailHeaderNextBtn')
+      ];
+      nextBtns.forEach(btn => {
+        if (btn) btn.disabled = isLast;
+      });
+    }
+
+    function nextProblem() {
+      if (currentProblemDetailIndex < currentDetailProblemList.length - 1) {
+        currentProblemDetailIndex++;
+        renderProblemDetailModal();
+      }
+    }
+
+    function prevProblem() {
+      if (currentProblemDetailIndex > 0) {
+        currentProblemDetailIndex--;
+        renderProblemDetailModal();
+      }
+    }
+
+    function closeProblemDetailModal() {
+      const modal = document.getElementById('problemDetailModal');
+      if (modal) modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    async function deleteProblemFromDetail(problemId) {
+      if (!confirm('Are you sure you want to delete this problem snippet?')) return;
+      await deleteProblem(problemId);
+      if (currentDetailProblemList.length > 1) {
+        currentDetailProblemList = currentDetailProblemList.filter(p => p.id !== problemId);
+        if (currentProblemDetailIndex >= currentDetailProblemList.length) {
+          currentProblemDetailIndex = currentDetailProblemList.length - 1;
+        }
+        renderProblemDetailModal();
+      } else {
+        closeProblemDetailModal();
+      }
+    }
+
+    // Keyboard Accessibility for Problem Detail Modal (Left/Right Arrow, Escape)
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('problemDetailModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextProblem();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevProblem();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeProblemDetailModal();
+      }
+    });
 
     // -------------------------------------------------------------
     // 7. COUNTERS & SIDEBAR
