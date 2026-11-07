@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi" class="h-full bg-white text-gray-900 antialiased">
+<html lang="en" class="h-full bg-[#1f1f1f] text-gray-200 antialiased">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Personal Study Vault - Beta Demo</title>
+  <title>Personal Study Vault</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,10 +13,16 @@
       theme: {
         extend: {
           colors: {
-            // Chỉ giữ màu đỏ làm Accent cảnh báo quá hạn theo đúng triết lý Todoist
-            urgent: {
+            todoist: {
+              main: '#1f1f1f',
+              sidebar: '#262626',
+              hover: '#2f2f2f',
+              active: '#363636',
+              border: '#333333',
+              subtle: '#2a2a2a',
               red: '#dc2626',
-              bg: '#fef2f2'
+              redHover: '#ef4444',
+              redText: '#f87171'
             }
           },
           fontFamily: {
@@ -28,7 +34,7 @@
   </script>
 
   <style>
-    /* Thanh cuộn tối giản */
+    /* Minimalist Dark Scrollbars */
     ::-webkit-scrollbar {
       width: 5px;
       height: 5px;
@@ -37,14 +43,14 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: #e5e7eb;
+      background: #3a3a3a;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #d1d5db;
+      background: #4a4a4a;
     }
     
-    /* Animation chuyển tab */
+    /* View Transitions */
     .tab-content {
       display: none;
     }
@@ -57,7 +63,7 @@
       to { opacity: 1; }
     }
 
-    /* Checkbox Todoist tròn viền mỏng */
+    /* Todoist Checkbox */
     .todo-check-btn.checked {
       background-color: #6b7280;
       border-color: #6b7280;
@@ -67,169 +73,190 @@
     }
     .todo-item.completed .todo-title {
       text-decoration: line-through;
-      color: #9ca3af;
+      color: #6b7280;
     }
     .todo-item.completed .todo-desc,
     .todo-item.completed .todo-meta {
-      opacity: 0.5;
+      opacity: 0.4;
     }
   </style>
 </head>
-<body class="h-full flex overflow-hidden font-sans select-none bg-white">
+<body class="h-full flex overflow-hidden font-sans select-none bg-[#1f1f1f] text-gray-200">
 
   <!-- ======================================================== -->
-  <!-- 1. SIDEBAR NAVIGATION (Phong cách tối giản chuẩn Todoist) -->
+  <!-- 1. SIDEBAR NAVIGATION (Todoist Dark Mode Style)          -->
   <!-- ======================================================== -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-[#fafafa] border-r border-gray-200 flex flex-col transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 md:static md:h-full">
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-[#262626] border-r border-[#333333] flex flex-col transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 md:static md:h-full">
     
-    <!-- User Profile tối giản (thay thế hoàn toàn cụm Logo rườm rà) -->
-    <div class="h-14 px-4 border-b border-gray-200/80 flex items-center justify-between">
+    <!-- User Profile: Avatar + Name + Email at the top -->
+    <div class="h-14 px-4 border-b border-[#333333] flex items-center justify-between">
       <div class="flex items-center space-x-2.5 min-w-0">
-        <!-- Avatar hình tròn nhỏ -->
         <img 
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&fit=crop&crop=faces&q=80" 
-          alt="Avatar Thái Lương Bình" 
-          class="w-7 h-7 rounded-full object-cover shrink-0 border border-gray-200"
+          alt="Thai Luong Binh" 
+          class="w-7 h-7 rounded-full object-cover shrink-0 border border-[#444444]"
         />
         <div class="min-w-0">
           <div class="flex items-center space-x-1">
-            <span class="font-semibold text-gray-900 text-xs truncate block">Thái Lương Bình</span>
+            <span class="font-semibold text-gray-200 text-xs truncate block">Thai Luong Binh</span>
             <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          <span class="text-[11px] text-gray-500 truncate block">thailuongbinhfr@gmail.com</span>
+          <span class="text-[11px] text-gray-400 truncate block">thailuongbinhfr@gmail.com</span>
         </div>
       </div>
 
-      <!-- Nút đóng sidebar trên Mobile -->
-      <button id="closeSidebarBtn" class="md:hidden text-gray-400 hover:text-gray-600 p-1 rounded">
+      <!-- Close button on Mobile -->
+      <button id="closeSidebarBtn" class="md:hidden text-gray-400 hover:text-gray-200 p-1 rounded">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
 
-    <!-- Nút thêm đề thi / task mới (Gọn gàng, viền mỏng, không màu mè) -->
+    <!-- Add Task / Source Button (Distinct yet sober) -->
     <div class="px-3 pt-3 pb-1">
-      <button onclick="openQuickAddModal()" class="w-full flex items-center space-x-2 py-1.5 px-2.5 rounded-md text-gray-700 hover:bg-gray-200/60 transition text-xs font-medium">
+      <button onclick="openQuickAddModal()" class="w-full flex items-center space-x-2.5 py-1.5 px-2.5 rounded-md text-gray-200 hover:bg-[#333333] transition text-xs font-medium">
         <div class="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white shrink-0">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <span>Thêm bài tập / đề thi</span>
+        <span>Add Task / Source</span>
       </button>
     </div>
 
     <!-- Navigation Menu Items -->
     <nav class="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto">
-      <!-- Mục 1: Dashboard -->
-      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-semibold text-gray-900 bg-gray-200/70 transition group">
+      
+      <!-- 1. Today (Active by default) -->
+      <button onclick="switchTab('today')" id="nav-today" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-semibold text-gray-100 bg-[#363636] transition group">
         <div class="flex items-center space-x-2.5">
-          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>Dashboard (Đề thi)</span>
+          <span>Today</span>
         </div>
-        <!-- Chỉ giữ màu đỏ cho cảnh báo quá hạn -->
-        <span class="text-red-600 font-semibold text-[11px]" title="2 bài tập quá hạn">2</span>
+        <span class="text-red-400 font-semibold text-[11px]" title="2 overdue tasks">2</span>
       </button>
 
-      <!-- Mục 2: Problem Vault -->
-      <button onclick="switchTab('vault')" id="nav-vault" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-700 hover:bg-gray-200/50 transition group">
+      <!-- 2. Upcoming (New view with calendar & schedule) -->
+      <button onclick="switchTab('upcoming')" id="nav-upcoming" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-300 hover:bg-[#2f2f2f] transition group">
         <div class="flex items-center space-x-2.5">
-          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span>Upcoming</span>
+        </div>
+        <span class="text-gray-500 text-[11px]">8</span>
+      </button>
+
+      <!-- 3. Problem Vault -->
+      <button onclick="switchTab('vault')" id="nav-vault" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-300 hover:bg-[#2f2f2f] transition group">
+        <div class="flex items-center space-x-2.5">
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           <span>Problem Vault</span>
         </div>
-        <span class="text-gray-400 text-[11px]">24</span>
+        <span class="text-gray-500 text-[11px]">24</span>
       </button>
 
-      <!-- Mục 3: Cài đặt & Đồng bộ -->
-      <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-700 hover:bg-gray-200/50 transition group">
+      <!-- 4. Sources (New view for uploaded original PDF exam papers) -->
+      <button onclick="switchTab('sources')" id="nav-sources" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-300 hover:bg-[#2f2f2f] transition group">
         <div class="flex items-center space-x-2.5">
-          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>Sources</span>
+        </div>
+        <span class="text-gray-500 text-[11px]">4</span>
+      </button>
+
+      <!-- 5. Settings & Sync -->
+      <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-normal text-gray-300 hover:bg-[#2f2f2f] transition group">
+        <div class="flex items-center space-x-2.5">
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span>Cài đặt & Đồng bộ</span>
+          <span>Settings & Sync</span>
         </div>
       </button>
 
-      <!-- Chủ đề & Môn học (Bỏ chấm màu, dùng icon # đơn sắc chuẩn Todoist) -->
+      <!-- Section: Subjects & Tags (Monochrome # icons) -->
       <div class="pt-5 pb-1 px-2.5 flex items-center justify-between">
-        <span class="text-[11px] font-semibold text-gray-500">Môn học & Nhãn</span>
+        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Subjects & Tags</span>
       </div>
 
       <div class="space-y-0.5">
-        <a href="javascript:void(0)" onclick="filterVaultByTag('Toán')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-700 hover:bg-gray-200/50 transition">
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Mathematics')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-300 hover:bg-[#2f2f2f] transition">
           <div class="flex items-center space-x-2">
-            <span class="text-gray-400 font-mono text-xs">#</span>
-            <span>Toán học</span>
+            <span class="text-gray-500 font-mono text-xs">#</span>
+            <span>Mathematics</span>
           </div>
-          <span class="text-[11px] text-gray-400">8</span>
+          <span class="text-[11px] text-gray-500">8</span>
         </a>
 
-        <a href="javascript:void(0)" onclick="filterVaultByTag('Vật Lý')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-700 hover:bg-gray-200/50 transition">
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Physics')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-300 hover:bg-[#2f2f2f] transition">
           <div class="flex items-center space-x-2">
-            <span class="text-gray-400 font-mono text-xs">#</span>
-            <span>Vật lý</span>
+            <span class="text-gray-500 font-mono text-xs">#</span>
+            <span>Physics</span>
           </div>
-          <span class="text-[11px] text-gray-400">6</span>
+          <span class="text-[11px] text-gray-500">6</span>
         </a>
 
-        <a href="javascript:void(0)" onclick="filterVaultByTag('Hóa Học')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-700 hover:bg-gray-200/50 transition">
+        <a href="javascript:void(0)" onclick="filterVaultByTag('Chemistry')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-300 hover:bg-[#2f2f2f] transition">
           <div class="flex items-center space-x-2">
-            <span class="text-gray-400 font-mono text-xs">#</span>
-            <span>Hóa học</span>
+            <span class="text-gray-500 font-mono text-xs">#</span>
+            <span>Chemistry</span>
           </div>
-          <span class="text-[11px] text-gray-400">5</span>
+          <span class="text-[11px] text-gray-500">5</span>
         </a>
 
-        <a href="javascript:void(0)" onclick="filterVaultByTag('IELTS')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-700 hover:bg-gray-200/50 transition">
+        <a href="javascript:void(0)" onclick="filterVaultByTag('IELTS')" class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-gray-300 hover:bg-[#2f2f2f] transition">
           <div class="flex items-center space-x-2">
-            <span class="text-gray-400 font-mono text-xs">#</span>
-            <span>IELTS / Tiếng Anh</span>
+            <span class="text-gray-500 font-mono text-xs">#</span>
+            <span>IELTS / English</span>
           </div>
-          <span class="text-[11px] text-gray-400">5</span>
+          <span class="text-[11px] text-gray-500">5</span>
         </a>
       </div>
     </nav>
 
-    <!-- Footer Sidebar: Google Drive Connection Status (Tối giản) -->
-    <div class="p-3 border-t border-gray-200 text-xs">
-      <div class="flex items-center justify-between text-gray-500">
+    <!-- Footer: Google Drive Storage & Offline Status -->
+    <div class="p-3 border-t border-[#333333] text-xs">
+      <div class="flex items-center justify-between text-gray-400">
         <div class="flex items-center space-x-1.5">
           <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
           </svg>
-          <span class="text-[11px]">Drive: Sẵn sàng</span>
+          <span class="text-[11px]">Drive: Ready</span>
         </div>
-        <span class="text-[10px] text-gray-400">Local-First</span>
+        <span class="text-[10px] text-gray-500 font-mono">Local-First</span>
       </div>
     </div>
   </aside>
 
-  <!-- Backdrop cho Mobile Drawer -->
-  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900/30 z-30 hidden md:hidden transition-opacity"></div>
+  <!-- Mobile Drawer Backdrop -->
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden transition-opacity"></div>
 
 
   <!-- ======================================================== -->
-  <!-- MAIN CONTENT CONTAINER                                   -->
+  <!-- MAIN CONTENT CONTAINER (Dark Theme: #1f1f1f)             -->
   <!-- ======================================================== -->
-  <main class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+  <main class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#1f1f1f]">
     
     <!-- Top Mobile Header -->
-    <header class="h-12 md:hidden border-b border-gray-200 px-4 flex items-center justify-between bg-white shrink-0">
+    <header class="h-12 md:hidden border-b border-[#333333] px-4 flex items-center justify-between bg-[#1f1f1f] shrink-0">
       <div class="flex items-center space-x-3">
-        <button onclick="toggleSidebar()" class="text-gray-600 p-1 rounded hover:bg-gray-100">
+        <button onclick="toggleSidebar()" class="text-gray-400 p-1 rounded hover:bg-[#2a2a2a]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span id="mobileViewTitle" class="font-semibold text-gray-900 text-sm">Dashboard</span>
+        <span id="mobileViewTitle" class="font-semibold text-gray-200 text-sm">Today</span>
       </div>
       <button onclick="openQuickAddModal()" class="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,86 +267,94 @@
 
 
     <!-- ======================================================== -->
-    <!-- VIEW 1: DASHBOARD (Thiết kế giống hệt Todoist)           -->
+    <!-- VIEW 1: TODAY (Replaces old Dashboard)                   -->
     <!-- ======================================================== -->
-    <section id="view-dashboard" class="tab-content active h-full overflow-y-auto px-4 md:px-12 py-7">
+    <section id="view-today" class="tab-content active h-full overflow-y-auto px-4 md:px-12 py-7">
       <div class="max-w-3xl mx-auto space-y-6">
         
-        <!-- Header Dashboard: Tiêu đề đen mực chuẩn Todoist -->
-        <div class="flex items-center justify-between pb-2">
-          <div>
-            <h1 class="text-xl font-bold text-gray-900 tracking-tight">Kế hoạch ôn tập & Đề thi</h1>
-          </div>
-          <div class="flex items-center space-x-3 text-xs text-gray-500">
-            <span class="text-red-600 font-medium">2 quá hạn</span>
-            <span>•</span>
-            <span>2 hôm nay</span>
-          </div>
+        <!-- Header Today View -->
+        <div class="pb-1">
+          <h1 class="text-xl font-bold text-gray-100 tracking-tight">Today</h1>
+          <p class="text-xs text-gray-400 mt-0.5">7 Nov · Saturday</p>
         </div>
 
-        <!-- NHÓM 1: QUÁ HẠN (Overdue - Đường kẻ chỉ mỏng, accent đỏ chuẩn mực) -->
+        <!-- Section: Overdue (Todoist Dark Red Header & Reschedule Action) -->
         <div class="space-y-1">
-          <!-- Section Header với chevron và task count -->
-          <div class="flex items-center space-x-1.5 pt-2 pb-1 text-xs font-semibold text-red-600">
-            <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-            <span>Quá hạn</span>
-            <span class="text-gray-400 font-normal">2</span>
+          <div class="flex items-center justify-between pt-2 pb-1 text-xs">
+            <div class="flex items-center space-x-1.5 font-bold text-red-400">
+              <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <span>Overdue</span>
+              <span class="text-gray-500 font-normal">2</span>
+            </div>
+            <button class="text-red-400 hover:underline text-xs font-normal">Reschedule</button>
           </div>
-          <!-- Đường kẻ mảnh màu đỏ dưới header Quá hạn (giống Todoist) -->
-          <div class="border-b border-red-500 mb-1"></div>
+          <div class="border-b border-[#333333] mb-1"></div>
 
-          <!-- List tasks: Tách biệt bằng border-b border-gray-200 -->
-          <div class="divide-y divide-gray-200/80">
+          <!-- Overdue Task Items -->
+          <div class="divide-y divide-[#2a2a2a]">
             
-            <!-- Item 1: Đề Toán -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <!-- Checkbox tròn viền mỏng -->
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
+            <!-- Item 1: Math Practice Exam -->
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <!-- Drag handle icon (Todoist 6 dots) -->
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+
+              <!-- Thin circular checkbox -->
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
                 <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
               </button>
               
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  Đề thi thử THPT Quốc Gia - Chuyên ĐH Sư Phạm (Lần 1)
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  National Mock Exam: Hanoi Pedagogical University (Test 1)
                 </div>
-                <div class="text-xs text-gray-500 todo-desc mt-0.5">
-                  Đã giải 40/50 câu. Còn 10 câu vận dụng cao cần crop đưa vào Problem Vault.
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  Solved 40/50 questions. 10 advanced problems need extraction into Problem Vault.
                 </div>
-                <!-- Metadata row: Date (chữ đỏ), tags màu xám không viền hoặc viền cực mỏng -->
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-500">
-                  <span class="text-red-600 font-medium flex items-center gap-1">
+                
+                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px]">
+                  <span class="text-red-400 font-medium flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    Hôm qua
+                    Yesterday
                   </span>
-                  <span class="text-gray-400">#Toán-12</span>
-                  <span class="text-gray-400">10 câu vào Vault</span>
-                  <span class="text-gray-400">Drive: PDF</span>
+                  <span class="text-gray-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    1
+                  </span>
+                  <span class="text-gray-400">#Mathematics</span>
+                  <span class="text-gray-400">10 in Vault</span>
+                  <span class="text-gray-400">PDF: Drive</span>
                 </div>
               </div>
             </div>
 
-            <!-- Item 2: Đề Lý -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
+            <!-- Item 2: Physics Wave Problem -->
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
                 <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
               </button>
 
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  Bài tập Sóng cơ & Giao thoa nâng cao - Thầy Vũ
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  Mechanical Waves & Advanced Interference - Practice Set
                 </div>
-                <div class="text-xs text-gray-500 todo-desc mt-0.5">
-                  3 câu đồ thị sóng hình sin bị sai đáp án cần xem lại lý thuyết.
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  3 sinusoidal wave graph questions missed; review phase difference formulas.
                 </div>
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-500">
-                  <span class="text-red-600 font-medium flex items-center gap-1">
+                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px]">
+                  <span class="text-red-400 font-medium flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    04/11
+                    4 Nov
                   </span>
-                  <span class="text-gray-400">#VậtLý</span>
-                  <span class="text-gray-400">3 câu sai</span>
+                  <span class="text-gray-400">#Physics</span>
+                  <span class="text-gray-400">3 mistakes</span>
                 </div>
               </div>
             </div>
@@ -327,65 +362,71 @@
           </div>
         </div>
 
-        <!-- NHÓM 2: HÔM NAY (Today) -->
+        <!-- Section: Today's Tasks -->
         <div class="space-y-1 pt-2">
-          <!-- Header nhóm Hôm nay -->
-          <div class="flex items-center space-x-1.5 pb-1 text-xs font-semibold text-gray-900">
-            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="flex items-center space-x-1.5 pb-1 text-xs font-semibold text-gray-300">
+            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
-            <span>Hôm nay</span>
-            <span class="text-gray-400 font-normal">2</span>
+            <span>7 Nov · Today · Saturday</span>
+            <span class="text-gray-500 font-normal">2</span>
           </div>
-          <!-- Đường kẻ mảnh ngăn cách nhóm (giống Todoist) -->
-          <div class="border-b border-gray-200 mb-1"></div>
+          <div class="border-b border-[#333333] mb-1"></div>
 
-          <div class="divide-y divide-gray-200/80">
+          <div class="divide-y divide-[#2a2a2a]">
             
-            <!-- Item 3: Đề Hóa -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
+            <!-- Item 3: Chemistry Test -->
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
                 <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
               </button>
 
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  Đề kiểm tra 50 phút Hóa Hữu Cơ: Chuyên đề Este - Peptit
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  Organic Chemistry 50-Min Timed Quiz: Esters & Lipids
                 </div>
-                <div class="text-xs text-gray-500 todo-desc mt-0.5">
-                  Bấm giờ làm nghiêm túc để rèn tốc độ tính toán.
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  Complete under strict 50-minute exam condition.
                 </div>
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-500">
-                  <span class="text-gray-600 font-normal flex items-center gap-1">
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    21:00 hôm nay
+                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-400">
+                  <span class="text-gray-300 font-normal flex items-center gap-1">
+                    <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    21:00 Today
                   </span>
-                  <span class="text-gray-400">#HóaHọc</span>
-                  <span class="text-gray-400">Đề 40 câu</span>
+                  <span>#Chemistry</span>
+                  <span>40 questions</span>
                 </div>
               </div>
             </div>
 
             <!-- Item 4: IELTS Writing -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
                 <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
               </button>
 
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  IELTS Writing Task 2: Topic "Artificial Intelligence in Education"
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  IELTS Writing Task 2: Essay on "Artificial Intelligence in Education"
                 </div>
-                <div class="text-xs text-gray-500 todo-desc mt-0.5">
-                  Viết bài hoàn chỉnh và trích xuất cụm từ vựng/collocation vào Vault.
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  Draft full essay and extract advanced collocations to Problem Vault.
                 </div>
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-500">
-                  <span class="text-gray-600 font-normal flex items-center gap-1">
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    23:59 hôm nay
+                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-gray-400">
+                  <span class="text-gray-300 font-normal flex items-center gap-1">
+                    <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    23:59 Today
                   </span>
-                  <span class="text-gray-400">#IELTS</span>
-                  <span class="text-gray-400">Anki Export</span>
+                  <span>#IELTS</span>
+                  <span>Anki Ready</span>
                 </div>
               </div>
             </div>
@@ -393,64 +434,13 @@
           </div>
         </div>
 
-        <!-- NHÓM 3: TUẦN NÀY (This Week) -->
-        <div class="space-y-1 pt-2">
-          <div class="flex items-center space-x-1.5 pb-1 text-xs font-semibold text-gray-900">
-            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-            <span>Tuần này</span>
-            <span class="text-gray-400 font-normal">2</span>
-          </div>
-          <div class="border-b border-gray-200 mb-1"></div>
-
-          <div class="divide-y divide-gray-200/80">
-            
-            <!-- Item 5 -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
-                <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              </button>
-
-              <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  Đề Khảo sát chất lượng Toán 12 - Sở GD&ĐT Hà Nội
-                </div>
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-gray-500">
-                  <span class="text-gray-600 font-normal">Chủ Nhật, 10/11</span>
-                  <span class="text-gray-400">#Toán-12</span>
-                  <span class="text-gray-400">De_KSCL_HN.pdf</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 6 -->
-            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-gray-50/50 -mx-1 px-1 rounded transition">
-              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-400 hover:border-gray-700 flex items-center justify-center shrink-0 transition cursor-pointer">
-                <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              </button>
-
-              <div class="flex-1 min-w-0">
-                <div class="text-sm font-normal text-gray-900 todo-title cursor-pointer leading-snug">
-                  Trọn bộ câu hỏi trắc nghiệm Lý thuyết Hóa Vô cơ 12
-                </div>
-                <div class="todo-meta flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-gray-500">
-                  <span class="text-gray-600 font-normal">12/11</span>
-                  <span class="text-gray-400">#HóaHọc</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Nút thêm task nhanh dạng Todoist (+ Thêm công việc) -->
+        <!-- Add Task Quick Action -->
         <div class="pt-2">
-          <button onclick="openQuickAddModal()" class="flex items-center space-x-2 text-gray-500 hover:text-red-600 text-xs font-normal py-1.5 transition">
-            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button onclick="openQuickAddModal()" class="flex items-center space-x-2 text-gray-400 hover:text-red-400 text-xs font-normal py-1.5 transition">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
             </svg>
-            <span>Thêm bài tập / đề thi</span>
+            <span>Add task</span>
           </button>
         </div>
 
@@ -459,14 +449,225 @@
 
 
     <!-- ======================================================== -->
-    <!-- VIEW 2: PROBLEM VAULT (Google Keep style tối giản)       -->
+    <!-- VIEW 2: UPCOMING (Todoist Horizontal Date Picker + Days) -->
+    <!-- ======================================================== -->
+    <section id="view-upcoming" class="tab-content h-full overflow-y-auto px-4 md:px-12 py-7">
+      <div class="max-w-3xl mx-auto space-y-6">
+        
+        <!-- Header: Upcoming + Month dropdown + Today pagination -->
+        <div class="space-y-3">
+          <h1 class="text-xl font-bold text-gray-100 tracking-tight">Upcoming</h1>
+
+          <!-- Month Selector & Controls (Exact match to Screenshot) -->
+          <div class="flex items-center justify-between text-xs">
+            <button class="flex items-center space-x-1.5 font-semibold text-gray-200 hover:text-white transition">
+              <span>November 2026</span>
+              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- < | Today | > Pagination buttons -->
+            <div class="flex items-center border border-[#333333] rounded-md overflow-hidden bg-[#242424]">
+              <button class="px-2 py-1 text-gray-400 hover:text-gray-200 hover:bg-[#2e2e2e] transition border-r border-[#333333]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button class="px-2.5 py-1 text-gray-200 hover:bg-[#2e2e2e] transition text-[11px] font-medium border-r border-[#333333]">
+                Today
+              </button>
+              <button class="px-2 py-1 text-gray-400 hover:text-gray-200 hover:bg-[#2e2e2e] transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Horizontal Date Picker Strip (From Screenshot 2026-11-07 at 12.27.20.png) -->
+          <div class="grid grid-cols-7 gap-1 text-center py-2 border-b border-[#333333] text-xs">
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-500 text-[11px] block">Mon 2</span>
+            </div>
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-500 text-[11px] block">Tue 3</span>
+            </div>
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-500 text-[11px] block">Wed 4</span>
+            </div>
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-500 text-[11px] block">Thu 5</span>
+            </div>
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-500 text-[11px] block">Fri 6</span>
+            </div>
+            <!-- Sat 7 with Red Badge for Today -->
+            <div class="cursor-pointer bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-200 font-semibold text-[11px] inline-flex items-center gap-1 justify-center">
+                Sat <span class="w-4 h-4 rounded-full bg-red-600 text-white font-bold text-[10px] inline-flex items-center justify-center">7</span>
+              </span>
+            </div>
+            <div class="cursor-pointer hover:bg-[#262626] py-1.5 rounded transition">
+              <span class="text-gray-400 text-[11px] block">Sun 8</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overdue Tasks in Upcoming -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between pb-1 text-xs">
+            <div class="flex items-center space-x-1.5 font-bold text-red-400">
+              <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <span>Overdue</span>
+            </div>
+            <button class="text-red-400 hover:underline text-xs">Reschedule</button>
+          </div>
+
+          <div class="divide-y divide-[#2a2a2a]">
+            <!-- Overdue Task 1 -->
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
+                <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  Watch: Switching to Todoist & Study Vault Workflow 🎬
+                </div>
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  Click here to open task details and access workflow tutorial video!
+                </div>
+                <div class="todo-meta flex items-center justify-between mt-1.5 text-[11px]">
+                  <div class="flex items-center space-x-3">
+                    <span class="text-red-400 font-medium flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      13 Jul 2025
+                    </span>
+                    <span class="text-gray-400 flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                      1
+                    </span>
+                  </div>
+                  <span class="text-gray-400">Getting Started 👋 #</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overdue Task 2 -->
+            <div class="todo-item py-2.5 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+              <span class="text-gray-600 opacity-0 group-hover:opacity-100 transition pt-1 cursor-grab hidden sm:inline-block">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm6-12a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </span>
+              <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
+                <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                  Set aside 5 minutes to review your <span class="bg-[#333333] px-1 py-0.5 rounded text-[11px] font-mono text-gray-300">Inbox</span>
+                </div>
+                <div class="text-xs text-gray-400 todo-desc mt-0.5">
+                  Use this time to organize, prioritize, schedule or delete tasks in your Inbox.
+                </div>
+                <div class="todo-meta flex items-center justify-between mt-1.5 text-[11px]">
+                  <div class="flex items-center space-x-3">
+                    <span class="text-red-400 font-medium flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      13 Jul 2025
+                    </span>
+                    <span class="text-gray-400 flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                      1
+                    </span>
+                  </div>
+                  <span class="text-gray-400">Getting Star... / Review #</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group: 7 Nov · Today · Saturday -->
+        <div class="space-y-2 pt-2">
+          <div class="pb-1 text-xs font-semibold text-gray-300 border-b border-[#333333]">
+            7 Nov · Today · Saturday
+          </div>
+          <button onclick="openQuickAddModal()" class="flex items-center space-x-2 text-gray-400 hover:text-red-400 text-xs font-normal py-1 transition">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add task</span>
+          </button>
+        </div>
+
+        <!-- Group: 8 Nov · Tomorrow · Sunday -->
+        <div class="space-y-2 pt-2">
+          <div class="pb-1 text-xs font-semibold text-gray-300 border-b border-[#333333]">
+            8 Nov · Tomorrow · Sunday
+          </div>
+          <div class="todo-item py-2 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+            <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
+              <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+            </button>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                Mathematics Grade 12 Quality Survey Mock Exam - Hanoi Dept of Education
+              </div>
+              <div class="todo-meta flex items-center space-x-3 mt-1 text-[11px] text-gray-400">
+                <span>Tomorrow</span>
+                <span>#Mathematics</span>
+                <span>File: De_KSCL_HN.pdf</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="openQuickAddModal()" class="flex items-center space-x-2 text-gray-400 hover:text-red-400 text-xs font-normal py-1 transition">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add task</span>
+          </button>
+        </div>
+
+        <!-- Group: 9 Nov · Monday -->
+        <div class="space-y-2 pt-2">
+          <div class="pb-1 text-xs font-semibold text-gray-300 border-b border-[#333333]">
+            9 Nov · Monday
+          </div>
+          <div class="todo-item py-2 flex items-start space-x-3 group hover:bg-[#262626]/40 -mx-1.5 px-1.5 rounded transition">
+            <button onclick="toggleTodo(this)" class="todo-check-btn w-4 h-4 mt-0.5 rounded-full border border-gray-500 hover:border-gray-300 flex items-center justify-center shrink-0 transition cursor-pointer">
+              <svg class="w-2.5 h-2.5 text-white hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+            </button>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-normal text-gray-200 todo-title cursor-pointer leading-snug">
+                Inorganic Chemistry Multiple Choice Theory Review - 100 Questions
+              </div>
+              <div class="todo-meta flex items-center space-x-3 mt-1 text-[11px] text-gray-400">
+                <span>Monday</span>
+                <span>#Chemistry</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="openQuickAddModal()" class="flex items-center space-x-2 text-gray-400 hover:text-red-400 text-xs font-normal py-1 transition">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add task</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 3: PROBLEM VAULT (Dark Mode Google Keep Style)      -->
     <!-- ======================================================== -->
     <section id="view-vault" class="tab-content h-full overflow-y-auto px-4 md:px-10 py-7">
       <div class="max-w-5xl mx-auto space-y-6">
 
-        <!-- 1. Thanh Search Bar TO, NỔI BẬT ở trên cùng (Google Keep style) -->
+        <!-- 1. Search Bar (Dark Mode) -->
         <div class="relative max-w-xl mx-auto">
-          <div class="flex items-center w-full bg-white rounded-lg border border-gray-300 hover:border-gray-400 focus-within:border-gray-500 transition px-3.5 py-2">
+          <div class="flex items-center w-full bg-[#262626] rounded-lg border border-[#333333] hover:border-[#444444] focus-within:border-gray-500 transition px-3.5 py-2">
             <svg class="w-4 h-4 text-gray-400 mr-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -474,179 +675,175 @@
               type="text" 
               id="vaultSearchInput" 
               oninput="filterVaultCards()"
-              placeholder="Tìm kiếm câu khó theo tag (#Toán, #VậnDụngCao), ghi chú, nguồn đề..." 
-              class="w-full text-xs text-gray-900 placeholder-gray-400 focus:outline-none bg-transparent"
+              placeholder="Search problem vault by tag (#Mathematics, #Calculus), notes, source..." 
+              class="w-full text-xs text-gray-200 placeholder-gray-500 focus:outline-none bg-transparent"
             >
-            <button onclick="clearVaultSearch()" id="clearSearchBtn" class="hidden text-gray-400 hover:text-gray-600 ml-2">
+            <button onclick="clearVaultSearch()" id="clearSearchBtn" class="hidden text-gray-400 hover:text-gray-200 ml-2">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
         </div>
 
-        <!-- 2. Thanh Quick Snippet Bar ("Take a Note" tối giản) -->
-        <div class="max-w-xl mx-auto bg-white rounded-lg border border-gray-200 px-3.5 py-2 flex items-center justify-between text-gray-400 text-xs hover:border-gray-300 cursor-pointer transition" onclick="openQuickAddModal('vault')">
-          <span class="text-gray-500 font-normal">Thêm nhanh câu khó vào Vault (Dán ảnh hoặc crop)...</span>
+        <!-- 2. Quick Snippet Bar ("Take a Note" in Dark Mode) -->
+        <div class="max-w-xl mx-auto bg-[#262626] rounded-lg border border-[#333333] px-3.5 py-2 flex items-center justify-between text-gray-400 text-xs hover:border-[#444444] cursor-pointer transition" onclick="openQuickAddModal('vault')">
+          <span class="text-gray-400 font-normal">Add question snippet to Vault (Paste image or crop)...</span>
           <div class="flex items-center space-x-2 text-gray-400">
-            <button class="p-1 hover:text-gray-700 rounded" title="Dán ảnh crop">
+            <button class="p-1 hover:text-gray-200 rounded" title="Paste cropped image">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </button>
-            <button class="p-1 hover:text-gray-700 rounded" title="Lấy từ Google Drive">
+            <button class="p-1 hover:text-gray-200 rounded" title="Import from Google Drive">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
             </button>
           </div>
         </div>
 
-        <!-- 3. Horizontal Tag Filter Chips (Tối giản đen/xám) -->
+        <!-- 3. Horizontal Tag Filter Chips -->
         <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs">
-          <span class="text-gray-400 font-normal whitespace-nowrap pl-0.5">Lọc tag:</span>
-          <button onclick="filterVaultByTag('all')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-gray-900 text-white font-normal whitespace-nowrap transition">Tất cả (24)</button>
-          <button onclick="filterVaultByTag('Toán')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#Toán</button>
-          <button onclick="filterVaultByTag('VậnDụngCao')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#VậnDụngCao</button>
-          <button onclick="filterVaultByTag('HìnhKhôngGian')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#HìnhKhôngGian</button>
-          <button onclick="filterVaultByTag('Vật Lý')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#VậtLý</button>
-          <button onclick="filterVaultByTag('Hóa Học')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#HóaHọc</button>
-          <button onclick="filterVaultByTag('IELTS')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap transition">#IELTS</button>
+          <span class="text-gray-500 font-normal whitespace-nowrap pl-0.5">Filter:</span>
+          <button onclick="filterVaultByTag('all')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-gray-100 text-gray-900 font-medium whitespace-nowrap transition">All (24)</button>
+          <button onclick="filterVaultByTag('Mathematics')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#Mathematics</button>
+          <button onclick="filterVaultByTag('Advanced')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#Advanced</button>
+          <button onclick="filterVaultByTag('Geometry')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#Geometry</button>
+          <button onclick="filterVaultByTag('Physics')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#Physics</button>
+          <button onclick="filterVaultByTag('Chemistry')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#Chemistry</button>
+          <button onclick="filterVaultByTag('IELTS')" class="vault-tag-chip px-2.5 py-1 rounded-md bg-transparent hover:bg-[#282828] text-gray-400 border border-[#333333] whitespace-nowrap transition">#IELTS</button>
         </div>
 
-        <!-- 4. Lưới thẻ câu hỏi (Grid Cards tối giản, viền mỏng) -->
+        <!-- 4. Problem Vault Grid Cards -->
         <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pb-12">
 
-          <!-- THẺ 1: Câu Hình không gian Toán 12 -->
-          <div class="vault-card group bg-white rounded-lg border border-gray-200 hover:border-gray-400 transition-all duration-150 overflow-hidden flex flex-col justify-between"
-               data-tags="Toán VậnDụngCao HìnhKhôngGian"
-               data-title="Góc giữa hai mặt phẳng trong hình lập phương">
+          <!-- Card 1: 3D Spatial Geometry Oxyz -->
+          <div class="vault-card group bg-[#262626] rounded-lg border border-[#333333] hover:border-gray-500 transition-all duration-150 overflow-hidden flex flex-col justify-between"
+               data-tags="Mathematics Advanced Geometry"
+               data-title="Angle between planes in 3D coordinate system">
             <div>
-              <!-- Khung Placeholder ảnh kỹ thuật đơn sắc -->
-              <div class="relative bg-gray-900 border-b border-gray-200 p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
+              <div class="relative bg-[#161616] border-b border-[#333333] p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
                 <svg class="w-full h-28 text-gray-300" viewBox="0 0 240 120" fill="none">
-                  <path d="M40 80 L120 100 L200 70 L120 50 Z" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="2 2" />
-                  <path d="M40 80 L40 30 L120 50 L120 100" stroke="#d1d5db" stroke-width="1.5" />
-                  <path d="M200 70 L200 20 L120 50" stroke="#d1d5db" stroke-width="1.5" />
+                  <path d="M40 80 L120 100 L200 70 L120 50 Z" stroke="#666666" stroke-width="1.5" stroke-dasharray="2 2" />
+                  <path d="M40 80 L40 30 L120 50 L120 100" stroke="#888888" stroke-width="1.5" />
+                  <path d="M200 70 L200 20 L120 50" stroke="#888888" stroke-width="1.5" />
                   <path d="M40 30 L120 10 L200 20" stroke="#ffffff" stroke-width="1.8" />
                   <circle cx="120" cy="50" r="2.5" fill="#ef4444" />
-                  <text x="125" y="48" fill="#d1d5db" font-size="8" font-family="monospace">O(0,0,0)</text>
-                  <text x="45" y="25" fill="#f3f4f6" font-size="9" font-family="sans-serif">Câu 47 [ĐHSP]</text>
+                  <text x="125" y="48" fill="#999999" font-size="8" font-family="monospace">O(0,0,0)</text>
+                  <text x="45" y="25" fill="#cccccc" font-size="9" font-family="sans-serif">Q.47 [DHSP Exam]</text>
                 </svg>
-                <span class="absolute top-2 right-2 bg-gray-800 text-gray-300 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #892</span>
+                <span class="absolute top-2 right-2 bg-[#222222] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #892</span>
               </div>
 
-              <!-- Nội dung thẻ: Tags chữ nhỏ viền cực mỏng + Ghi chú lỗi -->
               <div class="p-3 space-y-2">
-                <div class="flex flex-wrap gap-1 text-[11px] text-gray-500">
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#Toán</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#VậnDụngCao</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#HìnhKhôngGian</span>
+                <div class="flex flex-wrap gap-1 text-[11px]">
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Mathematics</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Advanced</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Geometry</span>
                 </div>
 
-                <div class="text-xs font-semibold text-gray-900 leading-snug">
-                  Tính Cosin góc giữa (SBD) và (ABCD)
+                <div class="text-xs font-semibold text-gray-200 leading-snug">
+                  Cosin of angle between (SBD) and (ABCD) in cube
                 </div>
 
-                <!-- Dòng ghi chú text (Mistake Note) tối giản -->
-                <p class="text-[11px] text-gray-600 bg-gray-50 border-l-2 border-gray-400 p-2 rounded-r leading-relaxed">
-                  <strong>Chìa khóa:</strong> Gắn hệ trục tọa độ Oxyz trực tiếp vào đỉnh lập phương để tính tích có hướng 2 vecto pháp tuyến, không nên dựng hình phụ sẽ mất nhiều thời gian.
+                <p class="text-[11px] text-gray-300 bg-[#1e1e1e] border-l-2 border-gray-500 p-2 rounded-r leading-relaxed">
+                  <strong class="text-gray-100">Key Insight:</strong> Align Oxyz Cartesian coordinates directly to cube vertex for cross-product normal vectors; avoids complex geometric construction.
                 </p>
               </div>
             </div>
 
-            <!-- Card Footer: Quick Actions đơn sắc -->
-            <div class="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-gray-400 text-xs">
-              <span class="text-[10px] text-gray-400">Review: 2 lần</span>
+            <div class="px-3 py-2 border-t border-[#333333] flex items-center justify-between text-gray-400 text-xs">
+              <span class="text-[10px] text-gray-500">Reviewed: 2x</span>
               <div class="flex items-center space-x-1">
-                <button onclick="previewAnkiExport('Câu 47 - Hình không gian Oxyz')" class="p-1 hover:text-gray-700 rounded" title="Xuất sang Anki Card">
+                <button onclick="previewAnkiExport('Q.47 - 3D Geometry Oxyz')" class="p-1 hover:text-gray-200 rounded" title="Export to Anki Card">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </button>
-                <button class="p-1 hover:text-gray-700 rounded" title="Ghim">
+                <button class="p-1 hover:text-gray-200 rounded" title="Pin">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- THẺ 2: Đồ thị Vật Lý Sóng Cơ -->
-          <div class="vault-card group bg-white rounded-lg border border-gray-200 hover:border-gray-400 transition-all duration-150 overflow-hidden flex flex-col justify-between"
-               data-tags="Vật Lý VậnDụngCao DoThi"
-               data-title="Đồ thị dao động và độ lệch pha sóng điện xoay chiều">
+          <!-- Card 2: AC Electricity Wave Graph -->
+          <div class="vault-card group bg-[#262626] rounded-lg border border-[#333333] hover:border-gray-500 transition-all duration-150 overflow-hidden flex flex-col justify-between"
+               data-tags="Physics Advanced Electricity"
+               data-title="AC Voltage-Current graph phase displacement">
             <div>
-              <div class="relative bg-gray-900 border-b border-gray-200 p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
+              <div class="relative bg-[#161616] border-b border-[#333333] p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
                 <svg class="w-full h-28" viewBox="0 0 240 120" fill="none">
-                  <line x1="20" y1="60" x2="220" y2="60" stroke="#6b7280" stroke-width="1.2" />
-                  <line x1="40" y1="10" x2="40" y2="110" stroke="#6b7280" stroke-width="1.2" />
+                  <line x1="20" y1="60" x2="220" y2="60" stroke="#555555" stroke-width="1.2" />
+                  <line x1="40" y1="10" x2="40" y2="110" stroke="#555555" stroke-width="1.2" />
                   <path d="M40 60 Q80 10 120 60 T200 60" stroke="#e5e7eb" stroke-width="1.8" fill="none" />
-                  <path d="M40 90 Q80 40 120 90 T200 90" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="3 3" fill="none" />
-                  <text x="140" y="30" fill="#d1d5db" font-size="8" font-family="monospace">u(t) sớm pha π/3</text>
+                  <path d="M40 90 Q80 40 120 90 T200 90" stroke="#888888" stroke-width="1.5" stroke-dasharray="3 3" fill="none" />
+                  <text x="140" y="30" fill="#aaaaaa" font-size="8" font-family="monospace">u(t) leads by π/3</text>
                 </svg>
-                <span class="absolute top-2 right-2 bg-gray-800 text-gray-300 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #893</span>
+                <span class="absolute top-2 right-2 bg-[#222222] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #893</span>
               </div>
 
               <div class="p-3 space-y-2">
-                <div class="flex flex-wrap gap-1 text-[11px] text-gray-500">
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#VậtLý</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#VậnDụngCao</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#ĐiệnXoayChiều</span>
+                <div class="flex flex-wrap gap-1 text-[11px]">
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Physics</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Advanced</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Electricity</span>
                 </div>
 
-                <div class="text-xs font-semibold text-gray-900 leading-snug">
-                  Đọc đồ thị u-i và thời điểm ngắt khóa K
+                <div class="text-xs font-semibold text-gray-200 leading-snug">
+                  u-i Graph interpretation and switch cutoff instant
                 </div>
 
-                <p class="text-[11px] text-gray-600 bg-gray-50 border-l-2 border-red-500 p-2 rounded-r leading-relaxed">
-                  <strong class="text-red-600">Lỗi hay gặp:</strong> Quên đổi đơn vị mili-giây (ms) sang giây trên trục hoành dẫn đến tính sai tần số góc ω.
+                <p class="text-[11px] text-gray-300 bg-[#1e1e1e] border-l-2 border-red-500 p-2 rounded-r leading-relaxed">
+                  <strong class="text-red-400">Common Trap:</strong> Forgetting to convert milliseconds (ms) to seconds on horizontal axis leads to wrong angular frequency calculation.
                 </p>
               </div>
             </div>
 
-            <div class="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-gray-400 text-xs">
-              <span class="text-[10px] text-gray-400">Review: 0 lần</span>
+            <div class="px-3 py-2 border-t border-[#333333] flex items-center justify-between text-gray-400 text-xs">
+              <span class="text-[10px] text-gray-500">Reviewed: 0x</span>
               <div class="flex items-center space-x-1">
-                <button onclick="previewAnkiExport('Câu đồ thị u-i')" class="p-1 hover:text-gray-700 rounded" title="Xuất sang Anki Card">
+                <button onclick="previewAnkiExport('AC Wave Graph Problem')" class="p-1 hover:text-gray-200 rounded" title="Export to Anki Card">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </button>
-                <button class="p-1 hover:text-gray-700 rounded">
+                <button class="p-1 hover:text-gray-200 rounded">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- THẺ 3: Este - Peptit Hóa Học 12 -->
-          <div class="vault-card group bg-white rounded-lg border border-gray-200 hover:border-gray-400 transition-all duration-150 overflow-hidden flex flex-col justify-between"
-               data-tags="Hóa Học VậnDụngCao Este"
-               data-title="Quy đổi hỗn hợp este đa chức mạch hở">
+          <!-- Card 3: Chemistry Ester Hydrolysis -->
+          <div class="vault-card group bg-[#262626] rounded-lg border border-[#333333] hover:border-gray-500 transition-all duration-150 overflow-hidden flex flex-col justify-between"
+               data-tags="Chemistry Advanced Esters"
+               data-title="Multi-functional ester reduction technique">
             <div>
-              <div class="relative bg-gray-900 border-b border-gray-200 p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
+              <div class="relative bg-[#161616] border-b border-[#333333] p-3.5 flex items-center justify-center min-h-[140px] overflow-hidden">
                 <div class="text-gray-200 font-mono text-center space-y-1">
-                  <div class="text-[11px] text-gray-400">Quy đổi dồn chất:</div>
-                  <div class="text-xs font-semibold text-white">X = { COO, CH₂, H₂ }</div>
-                  <div class="text-[10px] text-gray-400">nCOO = nNaOH = 0.35 mol</div>
+                  <div class="text-[11px] text-gray-500">Element Reduction:</div>
+                  <div class="text-xs font-semibold text-gray-100">X = { COO, CH₂, H₂ }</div>
+                  <div class="text-[10px] text-gray-500">nCOO = nNaOH = 0.35 mol</div>
                 </div>
-                <span class="absolute top-2 right-2 bg-gray-800 text-gray-300 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #894</span>
+                <span class="absolute top-2 right-2 bg-[#222222] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">Crop #894</span>
               </div>
 
               <div class="p-3 space-y-2">
-                <div class="flex flex-wrap gap-1 text-[11px] text-gray-500">
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#HóaHọc</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#VậnDụngCao</span>
-                  <span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">#Este</span>
+                <div class="flex flex-wrap gap-1 text-[11px]">
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Chemistry</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Advanced</span>
+                  <span class="px-1.5 py-0.5 bg-[#333333] rounded text-gray-300">#Esters</span>
                 </div>
 
-                <div class="text-xs font-semibold text-gray-900 leading-snug">
-                  Este 3 chức tác dụng với NaOH thu được 2 muối
+                <div class="text-xs font-semibold text-gray-200 leading-snug">
+                  Tri-functional ester reaction producing 2 sodium salts
                 </div>
 
-                <p class="text-[11px] text-gray-600 bg-gray-50 border-l-2 border-gray-400 p-2 rounded-r leading-relaxed">
-                  <strong>Phương pháp:</strong> Dồn chất về COO + CH2 + H2 giúp giảm từ 4 ẩn số xuống còn 2 phương trình bảo toàn khối lượng và nguyên tố Oxi.
+                <p class="text-[11px] text-gray-300 bg-[#1e1e1e] border-l-2 border-gray-500 p-2 rounded-r leading-relaxed">
+                  <strong class="text-gray-100">Method:</strong> Decompose into COO + CH2 + H2 groups to collapse 4 unknown variables into 2 mass & oxygen balance equations.
                 </p>
               </div>
             </div>
 
-            <div class="px-3 py-2 border-t border-gray-100 flex items-center justify-between text-gray-400 text-xs">
-              <span class="text-[10px] text-gray-400">Review: 4 lần</span>
+            <div class="px-3 py-2 border-t border-[#333333] flex items-center justify-between text-gray-400 text-xs">
+              <span class="text-[10px] text-gray-500">Reviewed: 4x</span>
               <div class="flex items-center space-x-1">
-                <button onclick="previewAnkiExport('Bài toán Este quy đổi')" class="p-1 hover:text-gray-700 rounded" title="Xuất sang Anki Card">
+                <button onclick="previewAnkiExport('Ester Hydrolysis Technique')" class="p-1 hover:text-gray-200 rounded" title="Export to Anki Card">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </button>
-                <button class="p-1 hover:text-gray-700 rounded">
+                <button class="p-1 hover:text-gray-200 rounded">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                 </button>
               </div>
@@ -660,66 +857,165 @@
 
 
     <!-- ======================================================== -->
-    <!-- VIEW 3: SETTINGS & SYNC (Cài đặt & Google Drive)         -->
+    <!-- VIEW 4: SOURCES (New view: Manage Exam PDFs on Drive)    -->
+    <!-- ======================================================== -->
+    <section id="view-sources" class="tab-content h-full overflow-y-auto px-4 md:px-12 py-7">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="flex items-center justify-between pb-1">
+          <div>
+            <h1 class="text-xl font-bold text-gray-100 tracking-tight">Sources</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Uploaded exam papers and handwritten notes on Google Drive</p>
+          </div>
+          <button onclick="openQuickAddModal('source')" class="px-3 py-1.5 rounded bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold transition">
+            Upload PDF
+          </button>
+        </div>
+
+        <!-- Sources Table / List -->
+        <div class="bg-[#262626] rounded-lg border border-[#333333] divide-y divide-[#333333] overflow-hidden text-xs">
+          
+          <!-- Source Item 1 -->
+          <div class="p-3.5 flex items-center justify-between hover:bg-[#2c2c2c] transition">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded bg-[#333333] flex items-center justify-center text-red-400 font-bold text-[10px]">
+                PDF
+              </div>
+              <div>
+                <div class="font-medium text-gray-200">National_Mock_Exam_DHSP_Test1.pdf</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Uploaded yesterday · 4.2 MB · 10 questions extracted</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="px-2.5 py-1 rounded bg-[#333333] hover:bg-[#3d3d3d] text-gray-300 text-[11px]">Crop Snippet</button>
+              <button class="text-gray-400 hover:text-gray-200 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Source Item 2 -->
+          <div class="p-3.5 flex items-center justify-between hover:bg-[#2c2c2c] transition">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded bg-[#333333] flex items-center justify-center text-red-400 font-bold text-[10px]">
+                PDF
+              </div>
+              <div>
+                <div class="font-medium text-gray-200">Physics_Wave_Interference_Advanced.pdf</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Uploaded 4 Nov · 2.8 MB · 3 questions extracted</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="px-2.5 py-1 rounded bg-[#333333] hover:bg-[#3d3d3d] text-gray-300 text-[11px]">Crop Snippet</button>
+              <button class="text-gray-400 hover:text-gray-200 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Source Item 3 -->
+          <div class="p-3.5 flex items-center justify-between hover:bg-[#2c2c2c] transition">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded bg-[#333333] flex items-center justify-center text-red-400 font-bold text-[10px]">
+                PDF
+              </div>
+              <div>
+                <div class="font-medium text-gray-200">Chemistry_Organic_Esters_Peptides.pdf</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Uploaded today · 1.5 MB · Ready for timed quiz</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="px-2.5 py-1 rounded bg-[#333333] hover:bg-[#3d3d3d] text-gray-300 text-[11px]">Crop Snippet</button>
+              <button class="text-gray-400 hover:text-gray-200 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Source Item 4 -->
+          <div class="p-3.5 flex items-center justify-between hover:bg-[#2c2c2c] transition">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded bg-[#333333] flex items-center justify-center text-red-400 font-bold text-[10px]">
+                PDF
+              </div>
+              <div>
+                <div class="font-medium text-gray-200">IELTS_Writing_Task2_Band8_Samples.pdf</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Uploaded 1 Nov · 3.1 MB · 8 questions extracted</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="px-2.5 py-1 rounded bg-[#333333] hover:bg-[#3d3d3d] text-gray-300 text-[11px]">Crop Snippet</button>
+              <button class="text-gray-400 hover:text-gray-200 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 5: SETTINGS & SYNC (Google Drive + Anki)            -->
     <!-- ======================================================== -->
     <section id="view-settings" class="tab-content h-full overflow-y-auto px-4 md:px-12 py-7">
       <div class="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 class="text-xl font-bold text-gray-900 tracking-tight">Cài đặt & Đồng bộ</h1>
-          <p class="text-xs text-gray-500 mt-1">Cấu hình kết nối Google Drive và xuất dữ liệu sang Anki</p>
+          <h1 class="text-xl font-bold text-gray-100 tracking-tight">Settings & Sync</h1>
+          <p class="text-xs text-gray-400 mt-0.5">Configure Google Drive storage and Anki Spaced Repetition export</p>
         </div>
 
-        <!-- Google Drive Integration Card: Tối giản, không hộp màu mè -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+        <!-- Google Drive Integration Card -->
+        <div class="bg-[#262626] rounded-lg border border-[#333333] p-4 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-              <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
               </svg>
               <div>
-                <h3 class="text-xs font-semibold text-gray-900">Lưu trữ Google Drive</h3>
-                <p class="text-[11px] text-gray-500">Chứa file PDF gốc và ảnh crop câu khó</p>
+                <h3 class="text-xs font-semibold text-gray-200">Google Drive Storage</h3>
+                <p class="text-[11px] text-gray-400">Stores original exam PDFs and cropped problem snippets</p>
               </div>
             </div>
-            <span class="text-[11px] text-gray-600 font-medium">Đã liên kết OAuth</span>
+            <span class="text-[11px] text-emerald-400 font-medium">OAuth Connected</span>
           </div>
 
-          <div class="bg-gray-50 rounded p-2.5 text-[11px] space-y-1 font-mono text-gray-600">
+          <div class="bg-[#1e1e1e] rounded p-2.5 text-[11px] space-y-1 font-mono text-gray-400">
             <div class="flex justify-between">
-              <span>Thư mục Drive:</span>
-              <span class="text-gray-900 font-semibold">/Personal Study Vault/</span>
+              <span>Drive Folder:</span>
+              <span class="text-gray-200 font-semibold">/Personal Study Vault/</span>
             </div>
             <div class="flex justify-between">
-              <span>File Metadata:</span>
-              <span class="text-gray-900 font-semibold">vault_db.json (0.4 MB)</span>
+              <span>Metadata Backup:</span>
+              <span class="text-gray-200 font-semibold">vault_db.json (0.4 MB)</span>
             </div>
           </div>
 
           <div class="pt-1 flex gap-2">
-            <button class="px-3 py-1.5 rounded bg-gray-900 hover:bg-gray-800 text-white text-xs font-medium transition">
-              Đồng bộ ngay
+            <button class="px-3 py-1.5 rounded bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold transition">
+              Sync Now
             </button>
-            <button class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-medium transition">
-              Đổi tài khoản Google
+            <button class="px-3 py-1.5 rounded border border-[#333333] hover:bg-[#333333] text-gray-300 text-xs font-medium transition">
+              Change Account
             </button>
           </div>
         </div>
 
         <!-- Anki Export Settings -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+        <div class="bg-[#262626] rounded-lg border border-[#333333] p-4 space-y-3">
           <div>
-            <h3 class="text-xs font-semibold text-gray-900">Tích hợp Anki (Spaced Repetition)</h3>
-            <p class="text-[11px] text-gray-500">Tự động cấu hình định dạng thẻ Flashcard</p>
+            <h3 class="text-xs font-semibold text-gray-200">Anki Integration (SRS)</h3>
+            <p class="text-[11px] text-gray-400">Flashcard package format (.apkg / TSV)</p>
           </div>
 
-          <div class="space-y-2 text-xs text-gray-700">
+          <div class="space-y-2 text-xs text-gray-300">
             <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" checked class="w-3.5 h-3.5 rounded text-gray-800 border-gray-300">
-              <span class="text-[11px]">Đính kèm ảnh crop câu hỏi làm mặt trước (Front)</span>
+              <input type="checkbox" checked class="w-3.5 h-3.5 rounded text-gray-800 bg-[#1e1e1e] border-gray-600">
+              <span class="text-[11px]">Attach cropped problem image as Front card face</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" checked class="w-3.5 h-3.5 rounded text-gray-800 border-gray-300">
-              <span class="text-[11px]">Đưa chìa khóa giải và ghi chú lỗi sai vào mặt sau (Back)</span>
+              <input type="checkbox" checked class="w-3.5 h-3.5 rounded text-gray-800 bg-[#1e1e1e] border-gray-600">
+              <span class="text-[11px]">Include mistake notes and solution formulas on Back face</span>
             </label>
           </div>
         </div>
@@ -730,99 +1026,99 @@
 
 
   <!-- ======================================================== -->
-  <!-- MODAL: XUẤT ANKI PREVIEW                                 -->
+  <!-- MODAL: ANKI EXPORT PREVIEW (Dark Mode)                   -->
   <!-- ======================================================== -->
-  <div id="ankiModal" class="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg max-w-sm w-full p-4 shadow-lg border border-gray-200 space-y-3">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
-        <h3 class="text-xs font-bold text-gray-900">Xuất thẻ Anki Flashcard</h3>
-        <button onclick="closeAnkiModal()" class="text-gray-400 hover:text-gray-600">
+  <div id="ankiModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-[#262626] rounded-lg max-w-sm w-full p-4 shadow-xl border border-[#333333] space-y-3">
+      <div class="flex items-center justify-between border-b border-[#333333] pb-2.5">
+        <h3 class="text-xs font-bold text-gray-100">Export Anki Flashcard</h3>
+        <button onclick="closeAnkiModal()" class="text-gray-400 hover:text-gray-200">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="space-y-2 text-xs">
-        <div class="bg-gray-50 rounded p-2.5 border border-gray-200">
-          <span class="font-semibold text-gray-700 block mb-0.5 text-[11px]">Mặt trước (Front):</span>
-          <p id="ankiModalTitle" class="text-gray-600 text-[11px]">[Hình ảnh crop câu hỏi & Đề thi gốc]</p>
+        <div class="bg-[#1e1e1e] rounded p-2.5 border border-[#333333]">
+          <span class="font-semibold text-gray-400 block mb-0.5 text-[11px]">Front (Question Face):</span>
+          <p id="ankiModalTitle" class="text-gray-200 text-[11px]">[Cropped Problem Image & Original Source Exam]</p>
         </div>
-        <div class="bg-gray-50 rounded p-2.5 border border-gray-200">
-          <span class="font-semibold text-gray-700 block mb-0.5 text-[11px]">Mặt sau (Back):</span>
-          <p class="text-gray-600 text-[11px]">Ghi chú phương pháp giải, công thức trọng tâm và bẫy đề thi cần tránh.</p>
+        <div class="bg-[#1e1e1e] rounded p-2.5 border border-[#333333]">
+          <span class="font-semibold text-gray-400 block mb-0.5 text-[11px]">Back (Answer & Insight):</span>
+          <p class="text-gray-300 text-[11px]">Key formula, common mistakes to avoid, and step-by-step resolution.</p>
         </div>
       </div>
 
       <div class="flex justify-end space-x-2 pt-1">
-        <button onclick="closeAnkiModal()" class="px-3 py-1 rounded border border-gray-200 text-xs text-gray-600 hover:bg-gray-50">Hủy</button>
-        <button onclick="alert('Đã sinh gói Anki (.apkg/.csv) thành công!'); closeAnkiModal()" class="px-3 py-1 rounded bg-gray-900 hover:bg-gray-800 text-white text-xs font-medium">Tải file .apkg</button>
+        <button onclick="closeAnkiModal()" class="px-3 py-1 rounded border border-[#333333] text-xs text-gray-400 hover:bg-[#333333]">Cancel</button>
+        <button onclick="alert('Anki deck (.apkg) exported successfully!'); closeAnkiModal()" class="px-3 py-1 rounded bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold">Download .apkg</button>
       </div>
     </div>
   </div>
 
 
   <!-- ======================================================== -->
-  <!-- MODAL: THÊM NHANH ĐỀ THI / CÂU HỎI                       -->
+  <!-- MODAL: ADD TASK / SOURCE                                 -->
   <!-- ======================================================== -->
-  <div id="quickAddModal" class="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg max-w-md w-full p-4 shadow-lg border border-gray-200 space-y-3">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
-        <h3 class="text-xs font-bold text-gray-900" id="quickAddModalTitle">Thêm mới bài tập / đề thi</h3>
-        <button onclick="closeQuickAddModal()" class="text-gray-400 hover:text-gray-600">
+  <div id="quickAddModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-[#262626] rounded-lg max-w-md w-full p-4 shadow-xl border border-[#333333] space-y-3">
+      <div class="flex items-center justify-between border-b border-[#333333] pb-2.5">
+        <h3 class="text-xs font-bold text-gray-100" id="quickAddModalTitle">Add Task or Exam Source</h3>
+        <button onclick="closeQuickAddModal()" class="text-gray-400 hover:text-gray-200">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="space-y-2.5 text-xs">
         <div>
-          <label class="block text-gray-700 font-medium mb-1">Tên đề thi / Bài tập:</label>
-          <input type="text" placeholder="VD: Đề thi thử Toán THPT Quốc Gia..." class="w-full px-2.5 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-gray-500">
+          <label class="block text-gray-300 font-medium mb-1">Task or Exam Title:</label>
+          <input type="text" placeholder="e.g. Calculus Mock Exam Test 2..." class="w-full px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333333] rounded text-gray-200 focus:outline-none focus:border-gray-500">
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-gray-700 font-medium mb-1">Môn học:</label>
-            <select class="w-full px-2.5 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-gray-500 bg-white">
-              <option>Toán học</option>
-              <option>Vật lý</option>
-              <option>Hóa học</option>
-              <option>IELTS / Tiếng Anh</option>
+            <label class="block text-gray-300 font-medium mb-1">Subject:</label>
+            <select class="w-full px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333333] rounded text-gray-200 focus:outline-none focus:border-gray-500">
+              <option>Mathematics</option>
+              <option>Physics</option>
+              <option>Chemistry</option>
+              <option>IELTS / English</option>
             </select>
           </div>
           <div>
-            <label class="block text-gray-700 font-medium mb-1">Hạn nộp (Deadline):</label>
-            <input type="date" class="w-full px-2.5 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-gray-500">
+            <label class="block text-gray-300 font-medium mb-1">Deadline Date:</label>
+            <input type="date" class="w-full px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333333] rounded text-gray-200 focus:outline-none focus:border-gray-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-gray-700 font-medium mb-1">File PDF hoặc ảnh (Lưu trực tiếp Google Drive):</label>
-          <div class="border border-dashed border-gray-300 hover:border-gray-500 rounded p-3 text-center cursor-pointer transition">
-            <span class="text-gray-500 text-[11px]">Nhấp để chọn file hoặc kéo thả vào đây</span>
+          <label class="block text-gray-300 font-medium mb-1">Upload PDF or Photo (Stored directly to Google Drive):</label>
+          <div class="border border-dashed border-[#444444] hover:border-gray-400 rounded p-3 text-center cursor-pointer transition bg-[#1e1e1e]">
+            <span class="text-gray-400 text-[11px]">Click to choose file or drag & drop here</span>
           </div>
         </div>
       </div>
 
-      <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
-        <button onclick="closeQuickAddModal()" class="px-3 py-1.5 rounded border border-gray-200 text-xs text-gray-600 hover:bg-gray-50">Hủy</button>
-        <button onclick="alert('Đã lưu thành công!'); closeQuickAddModal()" class="px-3 py-1.5 rounded bg-gray-900 hover:bg-gray-800 text-white text-xs font-medium">Lưu lại</button>
+      <div class="flex justify-end space-x-2 pt-2 border-t border-[#333333]">
+        <button onclick="closeQuickAddModal()" class="px-3 py-1.5 rounded border border-[#333333] text-xs text-gray-400 hover:bg-[#333333]">Cancel</button>
+        <button onclick="alert('Saved successfully to Google Drive & IndexedDB!'); closeQuickAddModal()" class="px-3 py-1.5 rounded bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold">Save</button>
       </div>
     </div>
   </div>
 
 
   <!-- ======================================================== -->
-  <!-- JAVASCRIPT TĨNH - ĐIỀU HƯỚNG VÀ TƯƠNG TÁC                -->
+  <!-- JAVASCRIPT - TAB NAVIGATION AND INTERACTION              -->
   <!-- ======================================================== -->
   <script>
-    // 1. Chuyển đổi View Tab
+    // 1. Tab Switcher
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(view => {
         view.classList.remove('active');
       });
 
       document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.classList.remove('bg-gray-200/70', 'font-semibold', 'text-gray-900');
-        btn.classList.add('text-gray-700', 'font-normal');
+        btn.classList.remove('bg-[#363636]', 'font-semibold', 'text-gray-100');
+        btn.classList.add('text-gray-300', 'font-normal');
       });
 
       const selectedView = document.getElementById(`view-${tabId}`);
@@ -832,14 +1128,16 @@
 
       const activeNav = document.getElementById(`nav-${tabId}`);
       if (activeNav) {
-        activeNav.classList.add('bg-gray-200/70', 'font-semibold', 'text-gray-900');
-        activeNav.classList.remove('text-gray-700', 'font-normal');
+        activeNav.classList.add('bg-[#363636]', 'font-semibold', 'text-gray-100');
+        activeNav.classList.remove('text-gray-300', 'font-normal');
       }
 
       const mobileTitles = {
-        'dashboard': 'Dashboard (Đề thi)',
-        'vault': 'Problem Vault (Câu khó)',
-        'settings': 'Cài đặt & Đồng bộ'
+        'today': 'Today',
+        'upcoming': 'Upcoming',
+        'vault': 'Problem Vault',
+        'sources': 'Sources',
+        'settings': 'Settings & Sync'
       };
       const mobileTitleElem = document.getElementById('mobileViewTitle');
       if (mobileTitleElem && mobileTitles[tabId]) {
@@ -851,7 +1149,7 @@
       }
     }
 
-    // 2. Toggle Todo Done theo phong cách Todoist
+    // 2. Todoist Toggle Mark Done
     function toggleTodo(btn) {
       btn.classList.toggle('checked');
       const item = btn.closest('.todo-item');
@@ -860,7 +1158,7 @@
       }
     }
 
-    // 3. Quản lý Sidebar trên Mobile & iPad
+    // 3. Mobile Sidebar Drawer
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const backdrop = document.getElementById('sidebarBackdrop');
@@ -889,7 +1187,7 @@
 
     document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSidebar);
 
-    // 4. Tìm kiếm và lọc thẻ Problem Vault
+    // 4. Problem Vault Filter by Query
     function filterVaultCards() {
       const query = document.getElementById('vaultSearchInput').value.toLowerCase().trim();
       const clearBtn = document.getElementById('clearSearchBtn');
@@ -919,21 +1217,21 @@
       filterVaultCards();
     }
 
-    // 5. Lọc Problem Vault theo Tag
+    // 5. Problem Vault Filter by Tag
     function filterVaultByTag(tag) {
       switchTab('vault');
 
       document.querySelectorAll('.vault-tag-chip').forEach(chip => {
-        chip.classList.remove('bg-gray-900', 'text-white');
-        chip.classList.add('bg-transparent', 'text-gray-600', 'border', 'border-gray-200');
+        chip.classList.remove('bg-gray-100', 'text-gray-900', 'font-medium');
+        chip.classList.add('bg-transparent', 'text-gray-400', 'border', 'border-[#333333]');
       });
 
       const matchedChip = Array.from(document.querySelectorAll('.vault-tag-chip')).find(chip => {
-        return chip.textContent.includes(tag) || (tag === 'all' && chip.textContent.includes('Tất cả'));
+        return chip.textContent.includes(tag) || (tag === 'all' && chip.textContent.includes('All'));
       });
       if (matchedChip) {
-        matchedChip.classList.remove('bg-transparent', 'text-gray-600', 'border', 'border-gray-200');
-        matchedChip.classList.add('bg-gray-900', 'text-white');
+        matchedChip.classList.remove('bg-transparent', 'text-gray-400', 'border', 'border-[#333333]');
+        matchedChip.classList.add('bg-gray-100', 'text-gray-900', 'font-medium');
       }
 
       const cards = document.querySelectorAll('.vault-card');
@@ -949,7 +1247,7 @@
 
     // 6. Modals
     function previewAnkiExport(title) {
-      document.getElementById('ankiModalTitle').textContent = `Thẻ: ${title}`;
+      document.getElementById('ankiModalTitle').textContent = `Card: ${title}`;
       document.getElementById('ankiModal').classList.remove('hidden');
     }
 
@@ -961,9 +1259,11 @@
       const modal = document.getElementById('quickAddModal');
       const title = document.getElementById('quickAddModalTitle');
       if (type === 'vault') {
-        title.textContent = 'Thêm câu hỏi khó vào Vault';
+        title.textContent = 'Add Problem Snippet to Vault';
+      } else if (type === 'source') {
+        title.textContent = 'Upload Exam Paper to Drive';
       } else {
-        title.textContent = 'Thêm bài tập / đề thi mới';
+        title.textContent = 'Add Task / Exam Source';
       }
       modal.classList.remove('hidden');
     }
