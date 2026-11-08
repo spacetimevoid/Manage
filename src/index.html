@@ -527,6 +527,18 @@
     <section id="view-vault" class="tab-content h-full overflow-y-auto px-4 md:px-10 py-7">
       <div class="max-w-5xl mx-auto space-y-6">
 
+        <!-- Header Problem Vault View -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+          <div>
+            <h1 class="text-xl font-bold text-gray-100 tracking-tight">Problem Vault</h1>
+            <p class="text-xs text-gray-400 mt-0.5">Mistake notebook, cropped question snippets, and Anki spaced repetition</p>
+          </div>
+          <button onclick="openQuickAddModal('vault_external')" class="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold transition flex items-center space-x-1.5 shadow-xs cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+            <span>Add External Problem</span>
+          </button>
+        </div>
+
         <!-- 1. Search Bar (Dark Mode) -->
         <div class="relative max-w-xl mx-auto">
           <div class="flex items-center w-full bg-[#262626] rounded-lg border border-[#333333] hover:border-[#444444] focus-within:border-gray-500 transition px-3.5 py-2">
@@ -1119,8 +1131,8 @@
       <!-- Mode 2: Problem Snippet Form -->
       <form id="problemSnippetForm" onsubmit="handleSnippetSubmit(event)" class="space-y-2.5 text-xs hidden">
         <div>
-          <label class="block text-gray-300 font-medium mb-1">Source Exam: <span class="text-red-400">*</span></label>
-          <select id="snippetSourceSelect" required class="w-full px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333333] rounded text-gray-200 focus:outline-none focus:border-gray-500">
+          <label class="block text-gray-300 font-medium mb-1">Source Exam <span class="text-gray-400 font-normal">(Optional for external problems)</span>:</label>
+          <select id="snippetSourceSelect" class="w-full px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333333] rounded text-gray-200 focus:outline-none focus:border-gray-500">
             <!-- Dynamically populated from sources -->
           </select>
         </div>
@@ -3085,7 +3097,8 @@
           const q = vaultSearchQuery.toLowerCase();
           const noteMatch = (p.note_text || '').toLowerCase().includes(q);
           const tagMatch = (Array.isArray(p.tags) ? p.tags.join(' ') : '').toLowerCase().includes(q);
-          const titleMatch = (p.sources && p.sources.title ? p.sources.title : '').toLowerCase().includes(q);
+          const sourceTitle = (p.sources && p.sources.title) ? p.sources.title : 'External Problem';
+          const titleMatch = sourceTitle.toLowerCase().includes(q);
           return noteMatch || tagMatch || titleMatch;
         }
         return true;
@@ -3117,18 +3130,38 @@
         `;
       }
 
+      // Add "Add External Problem" dropcard
+      const addCardHtml = `
+        <div onclick="openQuickAddModal('vault_external')" class="vault-card group bg-[#222222]/40 hover:bg-[#262626] rounded-lg border border-dashed border-[#444444] hover:border-gray-400 transition-all duration-150 p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[200px] space-y-3">
+          <div class="w-10 h-10 rounded-full bg-[#2a2a2a] group-hover:bg-[#333333] border border-[#3e3e3e] flex items-center justify-center text-gray-400 group-hover:text-gray-200 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-gray-300 group-hover:text-white transition">Add External Problem</div>
+            <div class="text-[11px] text-gray-500 mt-1">Standalone snippet without exam source</div>
+          </div>
+        </div>
+      `;
+
       // Render Cards
       if (filtered.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-xs text-gray-500 space-y-2">
+          <div class="col-span-full py-10 text-center text-xs text-gray-500 space-y-3">
             <div>No problems found in Vault.</div>
-            <button onclick="openQuickAddModal('vault')" class="text-emerald-400 hover:underline">+ Add your first snippet</button>
+            <button onclick="openQuickAddModal('vault_external')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-white text-gray-900 text-xs font-semibold transition cursor-pointer">
+              + Add External Problem
+            </button>
           </div>
-        `;
+        ` + addCardHtml;
       } else {
-        grid.innerHTML = filtered.map(p => {
+        const cardsHtml = filtered.map(p => {
           const tags = Array.isArray(p.tags) ? p.tags : [];
-          const sourceTitle = (p.sources && p.sources.title) ? p.sources.title : 'Study Exam';
+          const sourceTitle = (p.sources && p.sources.title) 
+            ? p.sources.title 
+            : (tags.length > 0 ? tags[0] + ' • External' : 'External Problem');
+          const isExternal = !p.source_id;
           const imageSrc = p.image_path || '';
 
           return `
@@ -3140,11 +3173,13 @@
                     <img src="${escapeHtml(imageSrc)}" alt="Snippet" class="max-h-28 object-contain">
                   ` : `
                     <div class="text-center font-mono text-gray-400 space-y-1">
-                      <div class="text-xs text-gray-500">Problem Snippet</div>
+                      <div class="text-xs text-gray-500">${isExternal ? 'External Problem' : 'Problem Snippet'}</div>
                       <div class="text-xs font-semibold text-gray-300">${escapeHtml(sourceTitle)}</div>
                     </div>
                   `}
-                  <span class="absolute top-2 right-2 bg-[#222222] text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono">Vault</span>
+                  <span class="absolute top-2 right-2 ${isExternal ? 'bg-blue-950/70 border border-blue-500/30 text-blue-300' : 'bg-[#222222] text-gray-400'} text-[10px] px-1.5 py-0.5 rounded font-mono">
+                    ${isExternal ? 'External' : 'Vault'}
+                  </span>
                 </div>
 
                 <div class="p-3 space-y-2">
@@ -3165,7 +3200,7 @@
               </div>
 
               <div class="px-3 py-2 border-t border-[#333333] flex items-center justify-between text-gray-400 text-xs">
-                <span class="text-[10px] text-gray-500">${p.anki_exported ? 'Synced to Anki' : 'Vault Ready'}</span>
+                <span class="text-[10px] text-gray-500">${p.anki_exported ? 'Synced to Anki' : (isExternal ? 'External • Ready' : 'Vault Ready')}</span>
                 <div class="flex items-center space-x-1">
                   <button onclick="event.stopPropagation(); previewAnkiCard('${escapeHtml(sourceTitle)}', '${escapeHtml(p.note_text || '')}')" class="p-1 hover:text-gray-200 rounded cursor-pointer" title="Preview Anki Card">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -3178,6 +3213,7 @@
             </div>
           `;
         }).join('');
+        grid.innerHTML = cardsHtml + addCardHtml;
       }
     }
 
@@ -3233,8 +3269,10 @@
       const counterElem = document.getElementById('problemDetailCounter');
       if (counterElem) counterElem.textContent = `Question ${currentNum} of ${total}`;
 
-      const sourceTitle = (p.sources && p.sources.title) ? p.sources.title : 'Study Exam';
-      const sourceSubject = (p.sources && p.sources.subject) ? p.sources.subject : 'General';
+      const sourceTitle = (p.sources && p.sources.title) 
+        ? p.sources.title 
+        : (p.tags && p.tags.length > 0 ? p.tags[0] + ' • External' : 'External Problem');
+      const sourceSubject = (p.sources && p.sources.subject) ? p.sources.subject : 'External';
 
       const titleElem = document.getElementById('problemDetailSourceTitle');
       if (titleElem) titleElem.textContent = sourceTitle;
@@ -3619,7 +3657,9 @@
       const p = currentDetailProblemList[currentProblemDetailIndex];
       const src = p && p.image_path ? p.image_path : '';
       if (!src) return;
-      const title = (p.sources && p.sources.title) ? `Problem • ${p.sources.title}` : 'Problem Snippet';
+      const title = (p.sources && p.sources.title) 
+        ? `Problem • ${p.sources.title}` 
+        : (p.tags && p.tags.length > 0 ? `Problem • ${p.tags[0]}` : 'External Problem');
       openImageZoom(src, title);
     }
 
@@ -3627,7 +3667,9 @@
       const p = currentDetailProblemList[currentProblemDetailIndex];
       const src = (p && p.solution_image_path) || (p && localStorage.getItem('solution_' + p.id)) || '';
       if (!src) return;
-      const title = (p.sources && p.sources.title) ? `Solution • ${p.sources.title}` : 'Solution View';
+      const title = (p.sources && p.sources.title) 
+        ? `Solution • ${p.sources.title}` 
+        : (p.tags && p.tags.length > 0 ? `Solution • ${p.tags[0]}` : 'Solution • External Problem');
       openImageZoom(src, title);
     }
 
@@ -3810,13 +3852,13 @@
     function populateSnippetSourceDropdown() {
       const select = document.getElementById('snippetSourceSelect');
       if (!select) return;
-      if (currentSources.length === 0) {
-        select.innerHTML = `<option value="">No sources yet. Please add a source first.</option>`;
-      } else {
-        select.innerHTML = currentSources.map(s => `
+      let optionsHtml = `<option value="">None (External Problem / Standalone)</option>`;
+      if (currentSources && currentSources.length > 0) {
+        optionsHtml += currentSources.map(s => `
           <option value="${s.id}">${escapeHtml(s.title)} (${escapeHtml(s.subject || 'General')})</option>
         `).join('');
       }
+      select.innerHTML = optionsHtml;
     }
 
     // -------------------------------------------------------------
@@ -3929,9 +3971,13 @@
       const tagsStr = document.getElementById('snippetTagsInput').value.trim();
       const noteText = document.getElementById('snippetNoteInput').value.trim();
       const imageInput = document.getElementById('snippetImageInput');
+      const previewImg = document.getElementById('snippetImagePreviewImg');
+      const previewCard = document.getElementById('snippetImagePreviewCard');
+      const hasPreviewImg = previewImg && previewImg.src && previewCard && !previewCard.classList.contains('hidden');
+      const hasImage = (imageInput && imageInput.files && imageInput.files[0]) || hasPreviewImg;
 
-      if (!sourceId) {
-        showToast('Please select or create an exam source first.');
+      if (!hasImage && !noteText) {
+        showToast('Please attach an image or enter notes for this problem.');
         return;
       }
 
@@ -3966,14 +4012,16 @@
               reader.readAsDataURL(file);
             });
           }
+        } else if (hasPreviewImg) {
+          imagePath = previewImg.src;
         }
 
         const tagsArray = tagsStr 
           ? tagsStr.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
-          : ['General'];
+          : (sourceId ? ['General'] : ['External']);
 
         const payload = {
-          source_id: sourceId,
+          source_id: sourceId || null,
           tags: tagsArray,
           note_text: noteText,
           image_path: imagePath,
@@ -3984,7 +4032,7 @@
         if (error) throw error;
 
         closeQuickAddModal();
-        showToast('Problem snippet saved to Vault!');
+        showToast(sourceId ? 'Problem snippet saved to Vault!' : 'External problem saved to Vault!');
         document.getElementById('snippetTagsInput').value = '';
         document.getElementById('snippetNoteInput').value = '';
         if (imageInput) imageInput.value = '';
@@ -4267,11 +4315,17 @@
       const taskForm = document.getElementById('taskSourceForm');
       const snippetForm = document.getElementById('problemSnippetForm');
 
-      if (type === 'vault') {
-        title.textContent = 'Add Problem Snippet to Vault';
+      if (type === 'vault' || type === 'vault_external') {
+        title.textContent = (type === 'vault_external') 
+          ? 'Add External Problem to Vault' 
+          : 'Add Problem Snippet to Vault';
         taskForm.classList.add('hidden');
         snippetForm.classList.remove('hidden');
         populateSnippetSourceDropdown();
+        if (type === 'vault_external') {
+          const select = document.getElementById('snippetSourceSelect');
+          if (select) select.value = '';
+        }
       } else {
         title.textContent = 'Add Task / Exam Source';
         taskForm.classList.remove('hidden');
