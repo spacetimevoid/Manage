@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "foundation": {
+    "strategy": "preserve",
+    "existingAssets": [
+      "src/kit.css",
+      "src/styles.css",
+      "src/app.js",
+      "src/reader.js",
+      "public/mark.svg",
+      "public/assets/fonts/InstrumentSans-variable.ttf",
+      "public/assets/fonts/OFL-InstrumentSans.txt",
+      "public/vendor/lucide.min.js"
+    ],
+    "assetActions": [
+      {
+        "asset": "src/kit.css",
+        "action": "preserve",
+        "reason": "Giữ token Manage, nền tảng và dòng giấy phép; thay đổi kiểu nút chỉ scope reader."
+      },
+      {
+        "asset": "src/styles.css",
+        "action": "evolve",
+        "reason": "Thay hình thức control reader theo user-reference-2, giữ shell và các view ngoài phạm vi."
+      },
+      {
+        "asset": "src/app.js",
+        "action": "preserve",
+        "reason": "Giữ Manage, Không gian cá nhân và ngôn ngữ ứng dụng hiện hữu."
+      },
+      {
+        "asset": "src/reader.js",
+        "action": "preserve",
+        "reason": "Giữ chức năng, trạng thái và ngữ nghĩa điều khiển; không đổi mặc định Vừa trang."
+      },
+      {
+        "asset": "public/mark.svg",
+        "action": "protect",
+        "reason": "Dấu M nét teal hiện hữu, không tạo hoặc thay logo."
+      },
+      {
+        "asset": "public/assets/fonts/InstrumentSans-variable.ttf",
+        "action": "preserve",
+        "reason": "Font Instrument Sans cục bộ đã khai báo trọng lượng 400–700."
+      },
+      {
+        "asset": "public/assets/fonts/OFL-InstrumentSans.txt",
+        "action": "protect",
+        "reason": "Giữ giấy phép font hiện hữu."
+      },
+      {
+        "asset": "public/vendor/lucide.min.js",
+        "action": "preserve",
+        "reason": "Giữ một bộ icon outline chức năng."
+      }
+    ],
+    "lockedDecisions": [
+      "Hình 2, user-reference-2, quyết định hình thức nhóm trang và chọn chế độ: nút tròn, ô nhập pill, chevron thoáng, nền trắng và viền xám mảnh.",
+      "Hình 1, user-reference-1, xác định phần reader cần sửa, không yêu cầu thay tài liệu hoặc dữ liệu đang đọc.",
+      "Giữ Manage, dấu M teal, Instrument Sans và nhãn reader tiếng Việt.",
+      "Giữ shell Open plane hiện hữu cùng sidebar 224px; không áp shell No sidebar của sheet lên toàn ứng dụng trong một yêu cầu chỉ sửa nút.",
+      "Giữ Vừa trang làm mặc định và đích Đặt lại; không đổi thành Vừa chiều rộng chỉ vì nhãn trong ảnh mẫu.",
+      "Giữ PDF nguyên bản, zoom thực, trang hiện tại, draft notes, tập trung và crop đúng nguồn.",
+      "Mọi control có box ít nhất 44×44px; chevron không khung vẫn có nhãn truy cập và focus rõ.",
+      "Không thêm chart, KPI, nội dung marketing hoặc hành động mới."
+    ],
+    "assumptions": [
+      "Áp dụng Achromatic ledger cho control reader: nền trắng, chữ ink và viền trung tính; giữ teal trên logo và focus của thương hiệu.",
+      "Kiểu pill của ảnh tham chiếu ưu tiên hơn radius control 6px của sheet trong nhóm trang, zoom và các nút reader; panel vẫn giữ hình học hiện hữu.",
+      "Ô trang và chọn chế độ theo hình 2 cao khoảng 48px; nút chevron có box ít nhất 44px. Các nút có nhãn khác dùng chiều cao trực quan 36px của sheet trong box 44px.",
+      "Thang chữ của sheet là mặc định cho phần điều khiển; không đổi tiêu đề hoặc typography ngoài phạm vi để sửa nút.",
+      "Các control zoom không xuất hiện trong ảnh 2 vẫn được giữ và đồng bộ hình thức, không suy ra yêu cầu xóa chúng."
+    ]
+  },
+  "creativeDirection": {
+    "summary": "Gương mặt là trang đề PDF của Manage cùng cụm chuyển trang dạng viên thuốc theo hình 2. Dùng Achromatic ledger trên các control: chữ ink, nền trắng, viền mảnh và trạng thái trung tính; giữ dấu M teal của thương hiệu.",
+    "traits": [
+      {
+        "quality": "Điều khiển thoáng",
+        "boundary": "Không đóng khung chữ tổng trang hoặc bọc mọi chevron bằng hộp."
+      },
+      {
+        "quality": "Tròn theo chức năng",
+        "boundary": "Không ép nút có nhãn dài thành hình tròn hoặc biến form ghi chú thành pill."
+      },
+      {
+        "quality": "Giữ trang làm trọng tâm",
+        "boundary": "Không tăng chiều cao chrome làm mất mép dưới của PDF."
+      }
+    ],
+    "productiveTension": "Control cần nhẹ như ảnh tham chiếu nhưng vẫn nhận biết được vùng bấm, trạng thái disabled và chế độ đang chọn.",
+    "signatureDevice": {
+      "description": "Cụm trang học Manage: nút trước tròn, ô trang dạng pill, tổng trang bằng chữ và chevron sau thoáng, kết nối với chế độ đọc cùng trang PDF nguyên bản.",
+      "status": "candidate",
+      "invariants": [
+        "Số trang hiện tại và tổng trang lấy từ cùng nguồn với PDF.",
+        "Ô số trang và chế độ có đường viền pill mảnh, nền trắng.",
+        "Chevron sau không có khung khi nghỉ nhưng giữ box bấm và focus.",
+        "Disabled có nền trung tính và icon đọc được.",
+        "Hình thức control không thay đổi zoom, draft hoặc nguồn crop."
+      ]
+    },
+    "restraint": "Control reader giữ gần như hoàn toàn trung tính, hướng tới ngân sách màu dưới 1% cho chrome; không tính màu gốc PDF. Không thêm màu để đạt ngân sách hoặc thêm chart để thể hiện hue.",
+    "avoid": [
+      "Nền teal trên chọn chế độ",
+      "Brand fill trên các nút reader",
+      "Hộp chữ nhật lặp quanh mọi icon",
+      "Viền đậm và bóng khi nghỉ",
+      "Gradient, glow, glass",
+      "Trang PDF bị thu nhỏ thêm để nhường chỗ cho nút"
+    ]
+  },
+  "colorPalette": [
+    {
+      "name": "ground",
+      "value": "#ffffff",
+      "usage": "Giữ nền trắng Manage thay #f8f8f8 của sheet; cũng là nền trắng của pill theo hình 2."
+    },
+    {
+      "name": "surface",
+      "value": "#f9f9f9",
+      "usage": "Giữ bề mặt phụ Manage quanh giấy, không đổi toàn ứng dụng."
+    },
+    {
+      "name": "raised",
+      "value": "#ffffff",
+      "usage": "Giữ bề mặt menu và dialog hiện hữu."
+    },
+    {
+      "name": "border",
+      "value": "#eaeaea",
+      "usage": "Giữ viền khối nhẹ của Manage."
+    },
+    {
+      "name": "rule",
+      "value": "#f3f3f3",
+      "usage": "Giữ đường phân cách nhẹ hiện hữu."
+    },
+    {
+      "name": "control",
+      "value": "#d9d9d6",
+      "usage": "Viền mảnh của ô trang và lựa chọn chế độ theo thang trung tính hiện hữu."
+    },
+    {
+      "name": "text",
+      "value": "#1f201d",
+      "usage": "Giữ chữ chính Manage và nền primary gần đen; chữ control không dùng teal."
+    },
+    {
+      "name": "muted",
+      "value": "#636361",
+      "usage": "Nhãn phụ, tổng trang và chữ disabled; đạt tối thiểu 4.5:1 trên nền trắng hoặc xám nhạt."
+    },
+    {
+      "name": "accent",
+      "value": "#1b6e66",
+      "usage": "Bảo toàn teal thương hiệu cho dấu M và focus; không dùng làm nền hoặc chữ selected của toolbar mới."
+    },
+    {
+      "name": "positive",
+      "value": "#2e7d32",
+      "usage": "Giữ trạng thái hoàn thành hiện hữu, không dùng cho giá trị zoom."
+    },
+    {
+      "name": "negative",
+      "value": "#b42318",
+      "usage": "Giữ màu lỗi thực của Manage thay màu sheet."
+    },
+    {
+      "name": "warning",
+      "value": "#92400e",
+      "usage": "Cảnh báo và notice dữ liệu mẫu hiện hữu."
+    },
+    {
+      "name": "chart-1",
+      "value": "#1f201d",
+      "usage": "Giữ ánh xạ chuỗi ink trong kit; không tạo chart ở reader."
+    },
+    {
+      "name": "chart-2",
+      "value": "#1b6e66",
+      "usage": "Giữ ánh xạ thương hiệu hiện hữu ngoài phạm vi sửa nút."
+    },
+    {
+      "name": "chart-3",
+      "value": "#8c8c88",
+      "usage": "Giữ màu mark phụ hiện hữu, không dùng làm chữ; không thêm chuỗi dữ liệu."
+    },
+    {
+      "name": "pill-positive-bg",
+      "value": "#dcfae5",
+      "usage": "Giữ nền trạng thái hoàn thành hiện hữu."
+    },
+    {
+      "name": "pill-positive-ink",
+      "value": "#04250e",
+      "usage": "Chữ tối trên nền positive."
+    },
+    {
+      "name": "pill-negative-bg",
+      "value": "#fdecea",
+      "usage": "Giữ nền lỗi hiện hữu."
+    },
+    {
+      "name": "pill-negative-ink",
+      "value": "#7a1d14",
+      "usage": "Chữ tối trên nền negative."
+    },
+    {
+      "name": "pill-warning-bg",
+      "value": "#fffbeb",
+      "usage": "Giữ nền cảnh báo, không dùng làm nền reader."
+    },
+    {
+      "name": "pill-warning-ink",
+      "value": "#92400e",
+      "usage": "Chữ tối trên nền warning."
+    },
+    {
+      "name": "pill-neutral-bg",
+      "value": "#f3f3f3",
+      "usage": "Giữ nền chip trung tính; dùng cho trạng thái disabled của nút tròn khi phù hợp hình 2."
+    },
+    {
+      "name": "pill-neutral-ink",
+      "value": "#3d3d3a",
+      "usage": "Chữ trạng thái neutral; selected control dùng ink thay tint màu."
+    }
+  ],
+  "typefaces": [
+    {
+      "family": "Instrument Sans",
+      "source": "public/assets/fonts/InstrumentSans-variable.ttf, khai báo tại src/styles.css; giấy phép public/assets/fonts/OFL-InstrumentSans.txt.",
+      "roles": [
+        "interface",
+        "navigation",
+        "labels",
+        "body",
+        "numbers"
+      ],
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ]
+    }
+  ],
+  "interfaceDirection": "Giữ shell và mật độ hiện hữu của Manage, không áp No sidebar hoặc các pattern workspace mới. Phần control mới theo Achromatic ledger và hình 2: ô trang pill trắng viền mảnh, tổng trang bằng chữ, previous tròn với nền xám khi disabled, next là chevron không khung khi nghỉ, chọn chế độ pill trắng có chevron bên phải. Bỏ tint teal khỏi selected mode; nhãn chế độ cùng selected ngữ nghĩa thể hiện lựa chọn, focus vẫn dùng teal thương hiệu. Label 12px sentence case màu muted, chữ control 14px, số trang và phần trăm dùng tabular-nums. Hàng chuẩn 44px; control thông thường vẽ cao 36px trong box 44px, ô trang và chọn chế độ khoảng 48px theo tham chiếu. Hover dùng nền trung tính hoặc viền rõ hơn, pressed phản hồi ngắn, disabled không giảm opacity toàn nút. Status học giữ các cặp pill hiện hữu. Nút header có nhãn dài dùng pill nhẹ; không thêm nút primary chỉ để đáp ứng mẫu sheet.",
+  "designTokens": {
+    "typeScale": {
+      "display": "24px",
+      "h1": "24px",
+      "h2": "16px",
+      "h3": "30px",
+      "body": "14px",
+      "small": "12px",
+      "label": "12px"
+    },
+    "radius": {
+      "scale": [
+        "6px",
+        "8px"
+      ],
+      "pill": "999px"
+    },
+    "spacing": {
+      "section": "24px",
+      "gutter": "12px",
+      "stack": "12px"
+    },
+    "buttons": {
+      "primary": "Một kiểu primary: nền text gần đen, chữ ground trắng, cao trực quan 36px trong box tối thiểu 44×44px; bo pill ở reader theo ảnh tham chiếu. Chỉ giữ nơi thực sự cần primary, không thêm hành động mới.",
+      "secondary": "Một kiểu secondary: nền ground trắng và viền control 1px theo hình 2, chữ text, bo pill. Cao trực quan 36px trong box ít nhất 44×44px; ô trang và chọn chế độ khoảng 48px là ngoại lệ tham chiếu. Icon-only dùng hình tròn hoặc affordance không khung theo vai trò."
+    },
+    "surfaces": "Giữ nền và khung PDF hiện hữu, không đổi panel hoặc view ngoài reader. Control trắng, viền trung tính mảnh; disabled dùng một bậc xám nhạt. Panel mặc định sheet radius 8px và control mặc định 6px chỉ dùng nơi không có quyết định hiện hữu hoặc tham chiếu; nhóm reader được yêu cầu dùng pill. Không bóng khi nghỉ; chỉ menu/dialog nổi có bóng nhẹ. Nhịp 12px dành cho nhóm control được chỉnh, không ghi đè gutter khung reader hiện hữu."
+  },
+  "imageDirection": {
+    "summary": "Giữ PDF gốc và dấu nhận diện hiện hữu; hai hình tham chiếu chỉ hướng dẫn kiểu control.",
+    "subjects": [
+      "Trang PDF đang đọc",
+      "Dấu M Manage hiện hữu"
+    ],
+    "treatment": "Giữ nguyên tỷ lệ, nội dung, màu và logo trong tài liệu. Không đưa screenshot tham chiếu vào giao diện; control được dựng bằng thành phần native và icon Lucide hiện hữu.",
+    "avoid": [
+      "Screenshot thay PDF",
+      "Ảnh stock hoặc minh họa trang trí",
+      "Icon chức năng tự vẽ mới",
+      "Đổi tài liệu sang Cân bằng hóa học chỉ vì ảnh 1",
+      "Lấy màu hoặc thương hiệu trong PDF làm UI"
+    ]
+  },
+  "motionDirection": {
+    "summary": "Phản hồi 180ms cubic-bezier(0.22, 1, 0.36, 1), có thể ngắt; không entrance.",
+    "principles": [
+      "Nhận biết hover, pressed và focus khi dùng nút; nền và viền phản hồi mà không đổi hình học trong 180ms thuộc khoảng 120–250ms, ease-out.",
+      "Xác nhận chọn chế độ hoặc chuyển trang khi thao tác; nhãn, trạng thái chọn và ngữ cảnh giấy cập nhật trực tiếp, phản hồi control 180ms thuộc khoảng 120–250ms, ease-out; không count-up hoặc fade nội dung.",
+      "Giữ liên hệ PDF và ghi chú khi mở/đóng pane hoặc tập trung; giữ chuyển tiếp hiện hữu 180ms thuộc khoảng 120–250ms, ease-out, bảo toàn draft và trang nguồn.",
+      "Giữ thao tác tương đương khi reduced motion hoặc nhập liên tiếp; ngắt hiệu ứng cũ và hiện trạng thái cuối ở 0ms thay 180ms ease-out, giữ focus và nội dung đọc được."
+    ],
+    "avoid": [
+      "Entrance",
+      "Scroll reveal",
+      "Zoom bật nảy",
+      "Lật trang 3D",
+      "Chuyển động lặp",
+      "Hiệu ứng che nội dung khi đổi trạng thái"
+    ]
+  },
+  "voice": {
+    "summary": "Giữ nhãn tiếng Việt hiện hữu: Trang trước, Trang sau, Số trang, Thu nhỏ, Phóng to, Thu phóng, Vừa trang, Vừa chiều rộng, Đặt lại về vừa trang, Ghi chú, Hoàn thành đề và Cắt câu hỏi. Số trang có tổng số trang, phần trăm có %. Giữ Đang mở PDF, Chưa mở được PDF và Thử lại cho đúng trạng thái.",
+    "avoid": [
+      "Đổi Vừa trang thành Vừa chiều rộng để chép nhãn ảnh",
+      "Nhãn chung chung như View hoặc Items",
+      "Gọi giới hạn zoom hợp lệ là lỗi",
+      "Bỏ accessible name của chevron không khung",
+      "Thêm lời quảng bá vào toolbar"
+    ]
+  }
+}

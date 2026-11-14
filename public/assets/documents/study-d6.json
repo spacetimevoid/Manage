@@ -1,0 +1,37 @@
+{
+  "id": "study-pdf-d6",
+  "documentId": "D6",
+  "title": "Este và chất béo",
+  "subject": "Hóa học",
+  "pageCount": 3,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d6.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d6.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "24f08201e69c5f74fefff5505aa5ab5b1c5e9a299d178db4292b300985147d28",
+  "problemCrops": [
+    {
+      "id": "problem-crop-p6",
+      "sourcePage": 1,
+      "imageUrl": "/assets/problems/problem-crop-p6.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    }
+  ]
+}

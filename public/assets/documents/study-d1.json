@@ -1,0 +1,58 @@
+{
+  "id": "study-pdf-d1",
+  "documentId": "D1",
+  "title": "Ứng dụng đạo hàm",
+  "subject": "Toán",
+  "pageCount": 4,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d1.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d1.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "e04503750e8dbd13bff93abb653a19e511c4ef801d070bc22224ee14cefb9f8a",
+  "problemCrops": [
+    {
+      "id": "problem-crop-p1",
+      "sourcePage": 2,
+      "imageUrl": "/assets/problems/problem-crop-p1.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    },
+    {
+      "id": "problem-crop-p2",
+      "sourcePage": 3,
+      "imageUrl": "/assets/problems/problem-crop-p2.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    }
+  ]
+}

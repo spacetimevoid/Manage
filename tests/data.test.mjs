@@ -1,0 +1,22 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {makeSampleState,stats,filterRecords,overdue,assertState} from '../src/data.js';
+import {migrateTypes,usedTypes,conditionCount,labelKey} from '../src/types.js';
+import {pageScale,pageNumber,readerPreferences} from '../src/reader-geometry.js';
+
+test('Reader preference migration defaults to full page once and preserves later choices',()=>{
+ assert.equal(readerPreferences(null).mode,'page');
+ const legacy={mode:'custom',percent:200,page:2,notes:true,notesWidth:310,anchors:{2:{x:.8,y:.9}}};
+ const migrated=readerPreferences(legacy);
+ assert.equal(migrated.mode,'page');assert.equal(migrated.page,2);assert.equal(migrated.notes,true);assert.equal(migrated.notesWidth,310);assert.deepEqual(migrated.anchors,{});
+ assert.equal(legacy.mode,'custom');
+ for(const mode of ['width','custom','page']){const choice={...migrated,mode,anchors:{2:{x:.5,y:.4}}};assert.deepEqual(readerPreferences(choice),choice);}
+});
+
+test('PDF zoom uses CSS inches and actual page geometry',()=>{const base={width:600,height:800,availableWidth:900,availableHeight:600};const one=pageScale({...base,mode:'custom',percent:100}),two=pageScale({...base,mode:'custom',percent:200});assert.equal(one.width,800);assert.equal(two.width,1600);assert.equal(two.height,one.height*2);const fit=pageScale({...base,mode:'page'});assert.equal(fit.height,600);assert.ok(fit.width<=900);const landscape=pageScale({...base,width:800,height:600,mode:'width'});assert.ok(Math.abs(landscape.width-900)<.001);assert.ok(landscape.height<900);assert.equal(pageNumber(999,4,2),2);assert.equal(pageNumber(-1,4,2),2);assert.equal(pageNumber(3,4,2),3);});
+
+test('Type inventory and combined results match the source worksheets',()=>{const s=makeSampleState();assert.equal(s.types.length,12);assert.equal(s.documents.flatMap(r=>r.typeIds).length,12);assert.equal(s.problems.flatMap(r=>r.typeIds).length,6);for(const kind of ['documents','problems']){const q=new URLSearchParams({subject:'Toán',type:'math-derivative',status:kind==='documents'?'in_progress':'review'});assert.deepEqual(filterRecords(s[kind],q,{problems:kind==='problems'}).map(r=>r.id),[kind==='documents'?'D1':'P2']);assert.equal(conditionCount(q,kind==='problems'),3);q.set('q','d');q.set('sort','recent');assert.equal(conditionCount(q,kind==='problems'),3);}assert.equal(usedTypes(s,false,'Toán').length,4);assert.equal(usedTypes(s,true,'Toán').length,2);assert.equal(labelKey(' Xét   dấu ĐẠO hàm '),labelKey('Xét dấu đạo hàm'));});
+test('Migration preserves explicit labels, personal records, notes and source files',()=>{const s=makeSampleState();const notes=structuredClone(s.notes);delete s.documents[0].typeIds;s.documents[1].typeIds=[];delete s.problems[0].typeIds;const personal={...s.documents[2],id:'personal',sample:false};delete personal.typeIds;s.documents.push(personal);migrateTypes(s);assert.deepEqual(s.documents[0].typeIds,['math-domain','math-derivative']);assert.deepEqual(s.documents[1].typeIds,[]);assert.deepEqual(personal.typeIds,[]);assert.deepEqual(s.notes,notes);assert.equal(s.problems[0].documentId,'D1');assert.equal(filterRecords([personal],new URLSearchParams('type=unclassified')).length,1);assert.equal(personal.pdfUrl,'/assets/documents/study-d3.pdf');const before=structuredClone(s);migrateTypes(s);assert.deepEqual(s,before);});
+test('Sample totals and all references reconcile',()=>{const state=makeSampleState();assert.deepEqual(stats(state),{overdue:1,today:1,doing:2,review:4,completed:2});assert.equal(state.documents.reduce((s,d)=>s+d.pageCount,0),20);assertState(state,true);assert.equal(state.documents.find(overdue).id,'D2');});
+test('Combined filters, Vietnamese search and stable sorting',()=>{const state=makeSampleState();const query=new URLSearchParams({subject:'Toán',status:'in_progress',q:'ung dung'});assert.deepEqual(filterRecords(state.documents,query).map(d=>d.id),['D1']);assert.equal(filterRecords(state.documents,new URLSearchParams('deadline=today')).length,1);assert.equal(filterRecords(state.problems,new URLSearchParams('status=mastered'),{problems:true}).length,2);assert.equal(filterRecords(state.documents,new URLSearchParams('q=khongtimthay')).length,0);});
+test('Completion removes overdue flag and empty account keeps honest zeroes',()=>{const state=makeSampleState();state.documents.find(d=>d.id==='D2').status='completed';assert.equal(stats(state).overdue,0);assert.deepEqual(stats({documents:[],problems:[]}),{overdue:0,today:0,doing:0,review:0,completed:0});});

@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "page": {
+    "title": "Ứng dụng đạo hàm",
+    "route": "/#/study/D1?page=2",
+    "description": "Reader Manage với nút tròn, ô trang và chọn chế độ dạng pill theo hình 2, giữ toàn bộ chức năng đọc hiện hữu."
+  },
+  "architecture": {
+    "contract": "Màn hình trả lời: Tôi đang đọc trang nào và có thể chuyển trang hoặc đổi cách hiển thị ngay ở đâu? Finding mẫu: Trang 2 trong 4 trang · Vừa trang. Công việc thường xuyên nhất là đọc rồi chuyển trang; cụm trang học dạng pill là dấu riêng bên cạnh PDF nguyên bản.",
+    "mode": "operate_monitor",
+    "novelty": "low",
+    "grid": "Giữ lưới reader hiện hữu 6 cột với gutter khối 24px. Tại 1440px: sidebar 224 + lề 24 + canvas 1168 + lề 24 = 1440; 6 × 174⅔ + 5 × 24 = 1168px. Header, toolbar và khung giấy span 6. Khi mở notes đủ chỗ: PDF 770⅔ + gutter 24 + notes 373⅓ = 1168px; range thay tỷ lệ nhưng tổng vẫn khép kín. Nhịp 12px của brand mới áp dụng bên trong nhóm control, không thay gutter canvas hoặc các view khác.",
+    "signatureRule": "Achromatic ledger trên control reader: nền trắng, chữ ink, viền trung tính; bỏ tint teal của chọn chế độ. Giữ teal thương hiệu ở dấu M và focus. Gương mặt là PDF nguyên bản, signature là nút trước tròn, ô trang pill, tổng trang bằng chữ và chevron sau không khung theo user-reference-2.",
+    "rhythm": "Giữ mật độ và bố cục reader hiện hữu. Control có chữ 14px, label và metadata 12px, số tabular-nums; hàng chuẩn 44px. Nút thường vẽ cao 36px trong box tối thiểu 44×44px; ô trang và chọn chế độ cao khoảng 48px theo tham chiếu, bo pill. Không đổi tiêu đề, khung giấy hoặc form notes ngoài phạm vi kiểu nút."
+  },
+  "navigation": [
+    {
+      "label": "Tổng quan",
+      "target": "#/home"
+    },
+    {
+      "label": "Tài liệu",
+      "target": "#/documents"
+    },
+    {
+      "label": "Problems",
+      "target": "#/problems"
+    }
+  ],
+  "navigationDesign": {
+    "layoutCase": "app-shell",
+    "layout": "Bảo toàn Open plane Manage, dấu M và Không gian cá nhân theo brand. Không thay bằng shell No sidebar của sheet trong một yêu cầu chỉ sửa control. Các điểm đến hiện hữu tiếp tục là view thật.",
+    "behavior": [
+      "URL trống tiếp tục mở reader theo logic hiện hữu; bộ mẫu mới là D1 trang 2. Tôn trọng URL tài liệu và trang cụ thể.",
+      "Không đổi route, query, bộ lọc hoặc vị trí quay lại danh sách vì thay hình thức nút.",
+      "Chỉ render view đang hoạt động và một h1; không mount thêm bản toolbar hoặc form ẩn.",
+      "Tập trung và notes là trạng thái reader, không thêm điểm đến điều hướng."
+    ],
+    "transformation": {
+      "compact": "Giữ top bar 48px, menu gập và lề 16px; sidebar không nằm cạnh giấy.",
+      "medium": "641–1100px giữ điều hướng gập, toolbar xuống dòng theo nhóm khi cần.",
+      "expanded": "Giữ sidebar 224px và canvas fluid; tập trung tiếp tục bỏ sidebar."
+    }
+  },
+  "sections": [
+    {
+      "id": "shell",
+      "layoutFamily": "dashboard",
+      "layoutCases": [
+        "app-screen"
+      ],
+      "purpose": "Giữ nhận diện và điều hướng học tập.",
+      "userQuestion": "Tôi đang học trong không gian nào?",
+      "stage": "orient",
+      "dependencies": [],
+      "evidence": [
+        "src/app.js có Manage, Không gian cá nhân và ba điểm đến hiện hữu.",
+        "public/mark.svg là dấu M teal."
+      ],
+      "copy": {
+        "heading": "Manage",
+        "body": [
+          "Không gian cá nhân",
+          "Học tập",
+          "Lưu trên thiết bị"
+        ],
+        "callsToAction": [
+          {
+            "label": "Tổng quan",
+            "target": "#/home"
+          },
+          {
+            "label": "Tài liệu",
+            "target": "#/documents"
+          },
+          {
+            "label": "Problems",
+            "target": "#/problems"
+          }
+        ]
+      },
+      "layout": "Giữ shell hiện hữu, không đổi nav hoặc thêm badge. Loading, zero và lỗi reader không thay shell. Không áp style pill mới toàn cục lên các màn hình khác.",
+      "motion": {
+        "purpose": "state_change",
+        "trigger": "press",
+        "behavior": "Giữ phản hồi menu hiện hữu, Escape và trả focus.",
+        "durationMs": 180,
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "reducedMotion": "Hiện trạng thái cuối ngay."
+      },
+      "componentNeeds": [],
+      "assetNeeds": [
+        "manage-mark"
+      ],
+      "transformation": {
+        "compact": "Menu toàn màn hình khi mở.",
+        "medium": "Điều hướng gập hiện hữu.",
+        "expanded": "Sidebar hiện hữu."
+      }
+    },
+    {
+      "id": "reader-context",
+      "layoutFamily": "dashboard",
+      "layoutCases": [
+        "app-screen"
+      ],
+      "referenceDirectionId": "user-reference-1",
+      "purpose": "Giữ ngữ cảnh tài liệu và đồng bộ kiểu nút học.",
+      "userQuestion": "Tôi đang đọc đề nào và có thể tiếp tục công việc học ra sao?",
+      "stage": "orient",
+      "dependencies": [
+        "shell"
+      ],
+      "evidence": [
+        "Hình 1 xác định nhóm nút header cần đồng bộ.",
+        "src/reader.js có các action Hoàn thành đề, notes, focus và menu.",
+        "src/data.js có D1, lastPage 2 và pageCount 4."
+      ],
+      "copy": {
+        "heading": "Ứng dụng đạo hàm",
+        "body": [
+          "Sample data",
+          "Trang 2 trong 4 trang · Vừa trang",
+          "Toán",
+          "Hạn 13/11/2026",
+          "Đang làm"
+        ],
+        "callsToAction": [
+          {
+            "label": "Quay lại",
+            "target": "action:return-to-source"
+          },
+          {
+            "label": "Hoàn thành đề",
+            "target": "action:toggle-complete"
+          },
+          {
+            "label": "Ghi chú",
+            "target": "action:toggle-notes"
+          },
+          {
+            "label": "Mở rộng vùng đọc",
+            "target": "action:toggle-focus"
+          },
+          {
+            "label": "Thao tác",
+            "target": "action:open-actions"
+          }
+        ]
+      },
+      "layout": "Span 6, giữ tên đề làm h1 duy nhất, metadata và finding cùng vị trí hiện hữu ngay trên toolbar. Đổi nút có nhãn sang pill trắng viền nhẹ, không tạo vòng tròn cho nhãn dài. Giữ trọng tâm và hình học tiêu đề, không lấy Cân bằng hóa học hoặc trang 1 từ ảnh để thay dữ liệu. Hoàn thành đề trực tiếp trên desktop, thu gọn theo cơ chế hiện hữu ở màn hình hẹp. Chỉ một notice dữ liệu mẫu mỗi view. ID sai, tài khoản rỗng và lỗi metadata giữ xử lý hiện hữu, không hiển thị số trang giả.",
+      "motion": {
+        "purpose": "feedback",
+        "trigger": "press",
+        "behavior": "Nút phản hồi nền và viền, không đổi kích thước; trạng thái học cập nhật trực tiếp.",
+        "durationMs": 180,
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "reducedMotion": "Cập nhật tức thời, giữ focus."
+      },
+      "componentNeeds": [],
+      "assetNeeds": [],
+      "transformation": {
+        "compact": "Giữ header gọn; nút phụ trong menu, không trùng control.",
+        "medium": "Cho action xuống dòng khi cần, không chồng lên tên đề.",
+        "expanded": "Giữ tên trái và action phải cùng cạnh canvas."
+      }
+    },
+    {
+      "id": "reader-controls",
+      "layoutFamily": "dashboard",
+      "layoutCases": [
+        "app-screen"
+      ],
+      "referenceDirectionId": "user-reference-2",
+      "purpose": "Đưa kiểu chuyển trang và chọn chế độ về đúng hình 2.",
+      "userQuestion": "Tôi muốn chuyển đến trang nào và xem ở chế độ nào?",
+      "stage": "act",
+      "dependencies": [
+        "reader-context"
+      ],
+      "evidence": [
+        "Hình 2 có previous tròn xám, ô trang pill trắng, tổng trang bằng chữ, next không khung và chọn chế độ pill viền mảnh.",
+        "src/reader.js đã có page input, previous/next, zoom, select mode, reset và crop.",
+        "src/reader-geometry.js đã giữ Vừa trang mặc định qua preference phiên bản 2."
+      ],
+      "copy": {
+        "heading": "Hiển thị",
+        "body": [
+          "Sample data",
+          "Trang 2 / 4 trang",
+          "Thu phóng",
+          "Vừa trang",
+          "Vừa chiều rộng",
+          "Tùy chỉnh"
+        ],
+        "callsToAction": [
+          {
+            "label": "Trang trước",
+            "target": "action:previous-page"
+          },
+          {
+            "label": "Trang sau",
+            "target": "action:next-page"
+          },
+          {
+            "label": "Thu nhỏ",
+            "target": "action:zoom-out"
+          },
+          {
+            "label": "Phóng to",
+            "target": "action:zoom-in"
+          },
+          {
+            "label": "Đặt lại về vừa trang",
+            "target": "action:fit-page"
+          },
+          {
+            "label": "Cắt câu hỏi",
+            "target": "action:crop-current-page"
+          }
+        ]
+      },
+      "layout": "Span 6, giữ nhóm trang trái và nhóm zoom/chế độ phải. Previous có box ít nhất 44px, hình tròn; khi disabled dùng nền xám nhạt và icon muted đọc được. Ô số trang pill trắng viền 1px, cao khoảng 48px, rộng khoảng 70px theo hình 2 và đủ chỗ cho số nhiều chữ số. Tổng trang là chữ không khung; nhãn Trang có thể chuyển thành tên truy cập để khớp độ thoáng ảnh, không bỏ đơn vị trang. Next là chevron trần khi nghỉ với box 44px. Chọn mode pill trắng viền mảnh cao khoảng 48px, padding đủ cho nhãn và chevron phải, không nền hoặc chữ teal khi selected. Giữ select native được style đầy đủ nếu đáp ứng hình thức, không thêm dropdown tự chế chỉ để đổi hình dáng. Minus/plus/reset dùng icon tròn nhẹ, ô phần trăm pill, không bỏ chúng vì ảnh không chụp. Nút Cắt câu hỏi dạng pill nhẹ, giữ vị trí cuối desktop. Không thêm nút lặp select. Loading giữ khung, zoom chưa sẵn sàng hiện '-' nhỏ và disabled; lỗi giữ các trạng thái thật, không giả 0%.",
+      "motion": {
+        "purpose": "feedback",
+        "trigger": "press",
+        "behavior": "Hover/pressed đổi nền hoặc viền trung tính, selected cập nhật nhãn trực tiếp; không dịch chuyển các control hoặc fade giấy.",
+        "durationMs": 180,
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "reducedMotion": "Trạng thái cuối hiện ngay."
+      },
+      "componentNeeds": [],
+      "assetNeeds": [],
+      "transformation": {
+        "compact": "Giữ hai hàng nhóm trang và nhóm zoom; không co box dưới 44px. Cắt câu hỏi tiếp tục trong menu. Dùng nhịp nội bộ gọn hơn khi cần thay vì cắt nhãn hoặc cuộn ngang toàn trang.",
+        "medium": "Cho nhóm xuống dòng có kiểm soát; ô trang và mode vẫn pill, không ép nhãn hẹp.",
+        "expanded": "Một toolbar khi đủ chỗ, nhóm trang và chọn mode giữ quan hệ trái/phải của hình 2; control zoom được giữ trong nhóm phải."
+      }
+    },
+    {
+      "id": "pdf-reading-surface",
+      "layoutFamily": "dashboard",
+      "layoutCases": [
+        "app-screen"
+      ],
+      "purpose": "Bảo toàn toàn bộ trang PDF trong khung nhìn.",
+      "userQuestion": "Tôi có thấy đủ trang sau khi đổi kiểu nút không?",
+      "stage": "act",
+      "dependencies": [
+        "reader-controls"
+      ],
+      "evidence": [
+        "src/reader.js render PDF.js thật và tính chiều cao khung theo phần viewport còn lại.",
+        "src/reader-geometry.js tính fit-page từ kích thước trang thực."
+      ],
+      "copy": {
+        "heading": "Trang PDF",
+        "body": [
+          "Sample data",
+          "Ứng dụng đạo hàm · Trang 2",
+          "Đang mở PDF",
+          "Chưa mở được PDF"
+        ],
+        "callsToAction": [
+          {
+            "label": "Thử lại",
+            "target": "action:retry-pdf"
+          }
+        ]
+      },
+      "layout": "Giữ khung span 6 khi notes đóng, một canvas một trang, đủ bốn cạnh ở Vừa trang. Không thay PDF bằng ảnh tham chiếu hoặc preview. Cân đối khoảng cách toolbar trong phạm vi hiện hữu để control 48px không tạo thêm hàng thừa; đo lại chiều cao chrome thực và fit-page. Khung vẫn ở trong viewport, không thêm chiều cao tối thiểu cố định. Loading giữ nhãn và frame, lỗi tại khung có retry theo kiểu nút mới. Tài khoản rỗng giữ Chưa có đề PDF; PDF không có trang là lỗi, không render trang 0.",
+      "motion": {
+        "purpose": "none",
+        "trigger": "none",
+        "behavior": "Giấy giữ tĩnh, render đúng tỷ lệ; không thêm hiệu ứng vì thay kiểu control.",
+        "durationMs": 0,
+        "easing": "linear",
+        "reducedMotion": "Không thay đổi."
+      },
+      "componentNeeds": [],
+      "assetNeeds": [],
+      "transformation": {
+        "compact": "Giữ lề và chiều cao khả dụng; không cuộn ngang toàn trang.",
+        "medium": "Fit lại khi toolbar xuống dòng hoặc xoay màn hình.",
+        "expanded": "Giữ toàn bộ giấy trong khung reader, căn giữa như hiện hữu."
+      }
+    },
+    {
+      "id": "reader-notes-focus",
+      "layoutFamily": "dashboard",
+      "layoutCases": [
+        "app-screen"
+      ],
+      "purpose": "Bảo toàn ghi chú và không gian tập trung khi đồng bộ nút.",
+      "userQuestion": "Tôi có thể ghi chú hoặc mở rộng vùng đọc mà không mất ngữ cảnh không?",
+      "stage": "continue",
+      "dependencies": [
+        "reader-context",
+        "pdf-reading-surface"
+      ],
+      "evidence": [
+        "Reader hiện có notes pane, range độ rộng, draft và focus mode.",
+        "Lưu ghi chú dùng IndexedDB, fullscreen là thao tác riêng."
+      ],
+      "copy": {
+        "heading": "Ghi chú",
+        "body": [
+          "Chiến thuật",
+          "Bẫy đề",
+          "Cách giải",
+          "Đã lưu",
+          "Thoát tập trung",
+          "Toàn màn hình"
+        ],
+        "callsToAction": [
+          {
+            "label": "Lưu ghi chú",
+            "target": "action:save-notes"
+          },
+          {
+            "label": "Đóng ghi chú",
+            "target": "action:close-notes"
+          },
+          {
+            "label": "Trở lại PDF",
+            "target": "action:return-to-pdf"
+          },
+          {
+            "label": "Thoát tập trung",
+            "target": "action:exit-focus"
+          },
+          {
+            "label": "Toàn màn hình",
+            "target": "action:request-fullscreen"
+          }
+        ]
+      },
+      "layout": "Giữ cơ chế notes đóng mặc định theo preference hiện hữu. Chỉ đồng bộ nút có thể nhìn thấy sang ngôn ngữ pill; textarea, range, panel và dữ liệu không biến thành pill. Desktop hai pane khi đủ ngưỡng hiện hữu, notes không làm mất bốn cạnh giấy ở fit-page. Notes rỗng giữ trường trống, loading/error giữ xử lý đọc hiện hữu; lỗi lưu giữ draft và có retry, commit thành công mới báo Đã lưu. Tập trung là trạng thái cùng reader, không thêm h1, toolbar hoặc view mới.",
+      "motion": {
+        "purpose": "state_change",
+        "trigger": "press",
+        "behavior": "Giữ chuyển tiếp pane và focus hiện hữu, có thể ngắt, bảo toàn draft và trang nguồn.",
+        "durationMs": 180,
+        "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "reducedMotion": "Đổi trạng thái ngay, giữ focus."
+      },
+      "componentNeeds": [],
+      "assetNeeds": [],
+      "transformation": {
+        "compact": "Một vùng tại một thời điểm; Trở lại PDF và Thoát tập trung luôn tiếp cận được.",
+        "medium": "Giữ ngưỡng hai pane theo chiều rộng thực, không ép form hẹp.",
+        "expanded": "Giữ notes cạnh PDF, nút và range có box đủ lớn; tập trung mở rộng canvas hiện hữu."
+      }
+    }
+  ],
+  "responsive": [
+    "Chỉ scope style mới vào reader, không ghi đè .button, .control hoặc token radius toàn cục.",
+    "Giữ canvas và gutter khối hiện hữu; nhịp 12px dùng cho nhóm control mới, không tái bố trí toàn trang.",
+    "Control theo hình 2 vẫn phải có box 44×44px trên mọi viewport; không dùng vùng bấm trong suốt chồng lên control kế bên.",
+    "Ở 390px, nhóm zoom được bố trí để giữ minus, percent, plus, mode và reset mà không làm tràn trang; không bỏ chức năng để sao chép crop ảnh.",
+    "Chiều cao toolbar mới được đưa vào phép tính vùng đọc thực; kiểm tra viewport thấp, tên dài và browser zoom.",
+    "Không mount bản toolbar hoặc action thứ hai để ẩn bằng CSS; menu compact và action desktop không trùng nhau.",
+    "Giữ diện tích và khả năng xem trọn PDF, trạng thái focus và draft khi đổi breakpoint."
+  ],
+  "interactions": [
+    "Dùng lại toàn bộ action handler hiện hữu; thay kiểu nút không reset preference phiên bản 2, mode, percent, page hoặc anchor.",
+    "Vừa trang vẫn là mặc định khi chưa có preference; Đặt lại chọn Vừa trang. Lựa chọn width/custom mới của người dùng tiếp tục được tôn trọng.",
+    "Previous và next dùng disabled thật ở biên, Enter trong ô trang vẫn hoạt động; ô trang sai không render ngoài miền. Kiểm tra đầu, giữa và cuối tài liệu.",
+    "Mode được nhận biết bằng nhãn và selected ngữ nghĩa; nền trắng trung tính thay tint teal, không đổi ý nghĩa mode hoặc phần trăm.",
+    "Hover có nền hoặc viền trung tính; pressed phản hồi ngắn; focus-visible rõ bằng accent thương hiệu; disabled giữ chữ/icon tương phản, không làm mờ cả control bằng opacity.",
+    "Chevron không khung vẫn là button có accessible name Trang sau; label Trang không hiện vẫn có tên truy cập cho input.",
+    "Menu giữ aria-expanded, Escape và trả focus. Nếu dùng native select, giữ keyboard native; không thêm focus trap cho select native.",
+    "Zoom 100% và 200% tiếp tục là tỷ lệ CSS thực, không dựa vào fit-width; phần trăm hiển thị theo render, có đơn vị %. Không fake con số 52% của ảnh 1.",
+    "Mở/đóng notes, lưu, focus và fullscreen giữ hành vi hiện hữu, không mất draft hoặc trang. Hoàn thành đề đổi trạng thái học mà không reset hiển thị.",
+    "Crop tiếp tục mở đúng documentId và page, giữ tọa độ chuẩn hóa theo trang PDF; không phụ thuộc hình học nút mới.",
+    "Loading, empty, zero và error dùng nguồn dữ liệu thật: không tài liệu không tự seed, thiếu tỷ lệ dùng '-', không có PDF không giả trang trắng hoặc số 0 thành công.",
+    "Phản hồi 180ms ease-out theo brand, không entrance; reduced motion dùng kết quả cuối ngay. Thao tác nhanh không làm chồng render hoặc đổi control position."
+  ],
+  "acceptanceCriteria": [
+    "Inventory 1: Người dùng là người học cá nhân đọc đề PDF trên desktop, tablet và phone; công việc thường xuyên nhất là đọc rồi chuyển trang, không invent thời lượng hoặc tần suất đo được.",
+    "Inventory 2: Giữ documents D1–D6 với title, subject, dueDate đơn vị ngày, pageCount và lastPage đơn vị trang, status, timestamp, PDF và preview; không thay dữ liệu bằng nội dung ảnh tham chiếu.",
+    "Inventory 3: Số trang mẫu 4, 3, 3, 4, 3, 3 cộng thành 20 trang; giữ 6 Problems, 2 notes, 12 dạng bài cùng typeIds và blob hiện hữu.",
+    "Inventory 4: Màn hình mặc định bộ mẫu vẫn D1 Ứng dụng đạo hàm, Toán, trang 2/4, hạn 13/11/2026 và trạng thái in_progress; D3 Cân bằng hóa học trong ảnh chỉ dùng kiểm tra thêm, không đổi entry.",
+    "Inventory 5: Problems giữ documentId, sourcePage đơn vị trang và cropRect chuẩn hóa 0–1; notes giữ documentId, strategy, traps, method và updatedAt, không tạo nội dung mẫu mới.",
+    "Inventory 6: Preference hiện hữu gồm mode page/width/custom, percent đơn vị %, page, notes, notesWidth đơn vị CSS px, focus và anchor chuẩn hóa. Style mới không đổi dữ liệu lưu hoặc chạy migration mới không cần thiết.",
+    "Inventory 7: Manage, dấu M, Không gian cá nhân và tài liệu PDF là tài sản riêng của sản phẩm. Không thêm người, ảnh stock, doanh thu, chart hoặc chứng cứ giả.",
+    "Inventory 8: Dữ liệu học và notes lưu cục bộ bằng IndexedDB; không claim backend hoặc đồng bộ tài khoản. Giữ notice Sample data một lần ở view chứa bộ mẫu.",
+    "Đối chiếu user-reference-2 trực tiếp: previous tròn xám khi disabled, ô trang pill trắng viền mảnh, tổng trang chữ không khung, next chevron không khung khi nghỉ và mode pill trắng có chevron phải. Không còn hộp teal selected hoặc bo chữ nhật 6px trong nhóm được yêu cầu sửa.",
+    "Kiểm tra các state previous/next trên trang đầu, giữa, cuối; active không bị hiểu là disabled, disabled không chỉ là opacity thấp; mọi box ít nhất 44×44px.",
+    "Kiểm tra header, zoom, reset và crop đồng bộ kiểu pill nhẹ nhưng form notes và panel không bị đổi radius ngoài ý muốn.",
+    "Tại 1440×900, header, toolbar và toàn bộ trang PDF ở Vừa trang xuất hiện trong viewport; khi mở notes thấy đầu form. Notes đóng mặc định là hợp lệ, không ép mở.",
+    "Kiểm tra 390×844, 640px, 768px, 1100px, 1101px và 1440px, thêm viewport thấp, tên dài và xoay màn hình. Không overlap, không control nhỏ hơn 44px và không cuộn ngang toàn trang.",
+    "Chạy kiểm tra đủ bốn cạnh PDF với sai số 2 CSS px sau khi đổi kích thước control, resize, mở/đóng notes và tập trung; không đổi nội dung, màu hoặc tỷ lệ PDF.",
+    "Thao tác thực chuyển trang, nhập trang sai, select mode, preset, custom zoom, reset, notes, lưu, focus/Escape, menu và crop; kiểm tra rapid input và reduced motion. Không suy ra hành vi từ ảnh tĩnh.",
+    "Giữ loading/error/empty của reader và notes; lỗi tải có retry, lưu quota lỗi giữ draft, không tài liệu không tự nạp lại bộ mẫu. Missing percentage là '-', không phải 0%.",
+    "Assertions dữ liệu hiện hữu phải qua trong console; document count, tổng trang, notes, Problems, sourcePage, cropRect và blob không đổi sau sửa control. Finding, input, canvas và crop link cùng một nguồn page.",
+    "Một h1 trong mọi view, icon button có accessible name, selected/expanded đúng nghĩa, menu Escape và trả focus, keyboard hoạt động tương đương.",
+    "Giữ font Instrument Sans và giấy phép, kiểm tra document.fonts.ready, FontFace loaded, document.fonts.check và tabular-nums. Không tải Geist để sửa riêng nút.",
+    "Giữ kit với dòng giấy phép; không dùng screenshot tham chiếu làm ảnh toolbar, không tạo component hoặc icon mới thay native control và Lucide hiện hữu.",
+    "Ghi rõ ngoại lệ sheet: giữ shell Open plane và font brand, dùng pill cùng chiều cao khoảng 48px theo ảnh người dùng; giữ cấu trúc ngoài reader. Không thêm pattern workspace-home, inbox hoặc settings vào yêu cầu này.",
+    "Verify before publishing: dữ liệu mẫu, ngày hạn và notes tại src/data.js; nhãn dạng bài tại src/types.js; PDF minh họa tại public/assets/documents. Giữ nguyên bộ mẫu, không coi đó là lịch sử học thật.",
+    "Báo cáo các kiểm tra chưa chạy, đặc biệt thiết bị cảm ứng thật, bàn phím ảo, screen reader và fullscreen trên từng trình duyệt."
+  ]
+}

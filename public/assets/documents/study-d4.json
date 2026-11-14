@@ -1,0 +1,15 @@
+{
+  "id": "study-pdf-d4",
+  "documentId": "D4",
+  "title": "Tích phân cơ bản",
+  "subject": "Toán",
+  "pageCount": 4,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d4.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d4.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "82b5a421177652a8169147cc284eb20b4cb7eee27dd5de3b1821c76cdf25db6a",
+  "problemCrops": []
+}

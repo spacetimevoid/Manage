@@ -1,0 +1,37 @@
+{
+  "id": "study-pdf-d5",
+  "documentId": "D5",
+  "title": "Điện xoay chiều",
+  "subject": "Vật lý",
+  "pageCount": 3,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d5.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d5.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "133e69915fe7b473bfc06136e8ea8b0597669a9da5bc8d3b176738a8fc5381f7",
+  "problemCrops": [
+    {
+      "id": "problem-crop-p5",
+      "sourcePage": 2,
+      "imageUrl": "/assets/problems/problem-crop-p5.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    }
+  ]
+}

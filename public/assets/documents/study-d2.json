@@ -1,0 +1,37 @@
+{
+  "id": "study-pdf-d2",
+  "documentId": "D2",
+  "title": "Dao động cơ",
+  "subject": "Vật lý",
+  "pageCount": 3,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d2.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d2.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "3c588c6465e0c14ac086cb5428eda4fd566b84a486434180ff79b435ca6de5fc",
+  "problemCrops": [
+    {
+      "id": "problem-crop-p3",
+      "sourcePage": 1,
+      "imageUrl": "/assets/problems/problem-crop-p3.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    }
+  ]
+}

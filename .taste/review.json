@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "verdict": "repair",
+  "summary": "Desktop 1440×900: (1) Khối chính vẫn chỉ hiện “Đang mở PDF…”, chưa thể đánh giá trang đọc. (2) Header, toolbar và khung đọc cùng cạnh canvas; khoảng trống đang thuộc loading, chưa đủ bằng chứng kết luận lỗi bố cục. (3) Control trung tính theo hình 2, nhưng gương mặt PDF chưa xuất hiện. (4) Finding và input cùng ghi 2/4; đối chiếu chân trang và tỷ lệ render là unknown. (5) Phần trăm thiếu hiện dấu '-', không giả 0%. (6) Không có chart, legend hoặc nhãn va chạm. (7) Không áp dụng kiểm tra phone. Mobile 390×844: (1) PDF là khối chính, đủ bốn cạnh, điều hướng hiện phía trên. (2) Không thấy tràn ngang hoặc lệch cạnh. (3) Pill trắng và chevron thoáng theo tham chiếu; PDF xuất hiện. (4) Finding, input và chân trang cùng ghi 2/4; tiêu đề và môn khớp, độ chính xác 41% là unknown. (5) Không có zero, giá trị thiếu hoặc badge đếm cần đối chiếu. (6) Không thấy nhãn va chạm hoặc control mặc định chưa style; không có chart/legend. (7) Navigation đã gập, các nhóm điều khiển chính vẫn hiện. Đã xem cả hai hình tham chiếu. DOM audit hai ảnh ghi nhận một h1, không vi phạm vùng bấm và bao phủ toàn chiều cao tài liệu. Không thấy thêm mục cấm hoặc dấu hiệu dashboard sinh tự động cần sửa trong phạm vi yêu cầu. Tương tác, motion, font thực tải và notes đóng có mức xác minh unknown.",
+  "findings": [
+    {
+      "id": "desktop_pdf_ready_capture_missing",
+      "severity": "major",
+      "area": "1440×900, pdf-reading-surface",
+      "evidenceType": "visual_inspection",
+      "confidence": "high",
+      "evidence": "Ảnh Preview mới vẫn chỉ hiện skeleton và “Đang mở PDF…” trong khối lớn nhất. Chưa có trang giấy để xác nhận đủ bốn cạnh hoặc bảo toàn vùng đọc. Ảnh này không chứng minh render bị treo hay tải chậm.",
+      "repair": "Đồng bộ điều kiện chụp Preview desktop với trạng thái render thực: chờ canvas có kích thước hợp lệ, loading kết thúc và trang hiện trong khung rồi chụp lại. Kiểm tra luồng Preview đang dùng bản build mới và tín hiệu sẵn sàng nào; chỉ sửa luồng PDF nếu xác nhận render không hoàn tất. Giữ nguyên bố cục, control và nội dung PDF."
+    }
+  ]
+}

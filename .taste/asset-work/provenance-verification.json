@@ -1,0 +1,289 @@
+{
+  "createdFor": "Manage illustrative study documents",
+  "font": {
+    "reference": "https://github.com/google/fonts/tree/main/ofl/instrumentsans",
+    "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/instrumentsans/InstrumentSans%5Bwdth,wght%5D.ttf",
+    "contentType": "application/octet-stream",
+    "licensePath": "public/assets/fonts/OFL-InstrumentSans.txt",
+    "magic": "00010000",
+    "axes": {
+      "wdth": [
+        75,
+        100
+      ],
+      "wght": [
+        400,
+        700
+      ]
+    },
+    "usedWeights": [
+      400,
+      500,
+      600
+    ],
+    "hasTnumFeature": true
+  },
+  "files": [
+    {
+      "path": "public/assets/documents/study-d1.json",
+      "bytes": 1524,
+      "sha256": "a0c0413172934fa0960cbe6dcb4f7198a1b89cdd7707e13f27c729487f28a80d"
+    },
+    {
+      "path": "public/assets/documents/study-d1.pdf",
+      "bytes": 66063,
+      "sha256": "e04503750e8dbd13bff93abb653a19e511c4ef801d070bc22224ee14cefb9f8a"
+    },
+    {
+      "path": "public/assets/documents/study-d2.json",
+      "bytes": 1036,
+      "sha256": "fdf1f5e2bdb0df4a4b0c2a6f42338535b3751c4bce1dfba77f980aa1b49fd639"
+    },
+    {
+      "path": "public/assets/documents/study-d2.pdf",
+      "bytes": 61736,
+      "sha256": "3c588c6465e0c14ac086cb5428eda4fd566b84a486434180ff79b435ca6de5fc"
+    },
+    {
+      "path": "public/assets/documents/study-d3.json",
+      "bytes": 1044,
+      "sha256": "c4217087f51d0fa6a891eed40ce131b5c13af0273223b4aab16f5db2cffd82c1"
+    },
+    {
+      "path": "public/assets/documents/study-d3.pdf",
+      "bytes": 81829,
+      "sha256": "7e8fbce89a97f6ac64ae3dbdc1243f12ab9d8423f0685af08b92719cd97428ea"
+    },
+    {
+      "path": "public/assets/documents/study-d4.json",
+      "bytes": 553,
+      "sha256": "89b5eef6200aad8cf09104fcbfcb45577e343824d83b6760e52be54bde1b7188"
+    },
+    {
+      "path": "public/assets/documents/study-d4.pdf",
+      "bytes": 66753,
+      "sha256": "82b5a421177652a8169147cc284eb20b4cb7eee27dd5de3b1821c76cdf25db6a"
+    },
+    {
+      "path": "public/assets/documents/study-d5.json",
+      "bytes": 1041,
+      "sha256": "ec7e6cb1ae02ba5e6623a873e23cda1d67de9a6e3e568c14d67469c7850f6841"
+    },
+    {
+      "path": "public/assets/documents/study-d5.pdf",
+      "bytes": 62862,
+      "sha256": "133e69915fe7b473bfc06136e8ea8b0597669a9da5bc8d3b176738a8fc5381f7"
+    },
+    {
+      "path": "public/assets/documents/study-d6.json",
+      "bytes": 1042,
+      "sha256": "fcd35308dea24cf8ef126cf2e6cc53b7fba24b54255b117e1b550a76eeeed733"
+    },
+    {
+      "path": "public/assets/documents/study-d6.pdf",
+      "bytes": 61219,
+      "sha256": "24f08201e69c5f74fefff5505aa5ab5b1c5e9a299d178db4292b300985147d28"
+    },
+    {
+      "path": "public/assets/previews/document-preview-d1.png",
+      "bytes": 90116,
+      "sha256": "54cfce24f4326f2fd476c3db892d6c01bc7c6a32de2795cad5669a3d2de84242",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/previews/document-preview-d2.png",
+      "bytes": 100523,
+      "sha256": "635be34f89c97a0f7f5ec161a3139e03640836a76fbbd9cd0fdcce5fe98fafc8",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/previews/document-preview-d3.png",
+      "bytes": 95253,
+      "sha256": "c4d3f4040f09da852a6a60e1f6e258a6f2fad240248c490123935b65e99f16ea",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/previews/document-preview-d4.png",
+      "bytes": 79283,
+      "sha256": "07b7679c829a2199cedaad1973697d96745a88b69b427f72aac775a93897bc16",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/previews/document-preview-d5.png",
+      "bytes": 84558,
+      "sha256": "58ab5d2b6252e91a4f17cb7dfef6f9c0d712a7fd4c0af3ceee7ecf7460dfde7e",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/previews/document-preview-d6.png",
+      "bytes": 100174,
+      "sha256": "2976a5f312c0b8647c459d10afdba0eca1c254fb96e5a5dc9d75cc79e41d9394",
+      "width": 1190,
+      "height": 1684,
+      "pixels": 2003960
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p1.png",
+      "bytes": 33812,
+      "sha256": "ad4b91c839eee30ae165267bb45f6480401819937d6e0c31bcc16df60526fc33",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p2.png",
+      "bytes": 29930,
+      "sha256": "170287f3af497698a1546ec90c41c784dd5fbd5ca6cfbb558754a7b5067f9063",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p3.png",
+      "bytes": 36811,
+      "sha256": "24eecb7fc8d2df3bf7a4e804a42ed8ea64e1b70b40a2db163dfe129fbd1b0128",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p4.png",
+      "bytes": 41938,
+      "sha256": "00827ef5846b2674176ad4d782c33219f12e683850e1dd9a04baaa717129820d",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p5.png",
+      "bytes": 35563,
+      "sha256": "70b29120b876dcecedfb087571c00c7bbb609efb094ccac6e22a26c5c0a7fd3f",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/problems/problem-crop-p6.png",
+      "bytes": 35520,
+      "sha256": "1079f5e853328acb85689130622d50e60eb666169657252379feba4eedfb6155",
+      "width": 1497,
+      "height": 540,
+      "pixels": 808380
+    },
+    {
+      "path": "public/assets/fonts/InstrumentSans-variable.ttf",
+      "bytes": 194336,
+      "sha256": "b24f1812584816958afcf22e22d08e44318c5e51651e25d2438efdde389b33b1"
+    },
+    {
+      "path": "public/assets/fonts/OFL-InstrumentSans.txt",
+      "bytes": 4403,
+      "sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966"
+    }
+  ],
+  "inspection": {
+    "pdfEngine": "Windows.Data.Pdf.PdfDocument",
+    "pagesRendered": 20,
+    "pageCounts": [
+      4,
+      3,
+      3,
+      4,
+      3,
+      3
+    ],
+    "visualReview": "All 20 pages reviewed on a contact sheet; all six crops reviewed together, with P4 and D1 preview inspected at larger size. No overlap, missing glyphs, or clipped question content observed.",
+    "authoring": "Chrome headless printed original HTML worksheets, not interface screenshots.",
+    "originalContent": true
+  },
+  "assetConsumers": {
+    "problem-crop-p1": [
+      "home-problems",
+      "problems-library",
+      "problem-detail"
+    ],
+    "problem-crop-p3": [
+      "home-problems",
+      "problems-library",
+      "problem-detail"
+    ],
+    "document-preview-d1": [
+      "documents-library"
+    ],
+    "document-preview-d2": [
+      "documents-library"
+    ],
+    "document-preview-d3": [
+      "documents-library"
+    ],
+    "document-preview-d4": [
+      "documents-library"
+    ],
+    "document-preview-d5": [
+      "documents-library"
+    ],
+    "document-preview-d6": [
+      "documents-library"
+    ],
+    "study-pdf-d1": [
+      "study-reader"
+    ],
+    "study-pdf-d2": [
+      "study-reader"
+    ],
+    "study-pdf-d3": [
+      "study-reader"
+    ],
+    "study-pdf-d4": [
+      "study-reader"
+    ],
+    "study-pdf-d5": [
+      "study-reader"
+    ],
+    "study-pdf-d6": [
+      "study-reader"
+    ],
+    "problem-crop-p2": [
+      "problems-library",
+      "problem-detail"
+    ],
+    "problem-crop-p4": [
+      "problems-library",
+      "problem-detail"
+    ],
+    "problem-crop-p5": [
+      "problems-library",
+      "problem-detail"
+    ],
+    "problem-crop-p6": [
+      "problems-library",
+      "problem-detail"
+    ]
+  },
+  "fontConsumers": [
+    "shell",
+    "home-heading",
+    "home-counts",
+    "home-deadlines",
+    "home-resume",
+    "home-problems",
+    "home-notes",
+    "documents-library",
+    "document-form",
+    "study-reader",
+    "study-notes",
+    "problem-capture",
+    "problems-library",
+    "problem-detail"
+  ]
+}

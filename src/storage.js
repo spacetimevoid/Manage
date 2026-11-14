@@ -1,0 +1,7 @@
+let dbPromise;
+export function database(){
+ if(!dbPromise)dbPromise=new Promise((resolve,reject)=>{const request=indexedDB.open('manage-study',1);request.onupgradeneeded=()=>{request.result.createObjectStore('state');request.result.createObjectStore('files');};request.onsuccess=()=>resolve(request.result);request.onerror=()=>{dbPromise=null;reject(request.error);};request.onblocked=()=>reject(new Error('Hãy đóng tab Manage khác rồi thử lại.'));});return dbPromise;
+}
+export async function readStore(store,key){const db=await database();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const r=tx.objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+export async function writeState(state,{files=[],deleteFiles=[]}={}){const db=await database();return new Promise((resolve,reject)=>{const tx=db.transaction(['state','files'],'readwrite');tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error||new Error('Chưa lưu được dữ liệu.'));tx.onerror=()=>reject(tx.error);try{tx.objectStore('state').put(state,'main');for(const [key,blob]of files)tx.objectStore('files').put(blob,key);for(const key of deleteFiles)tx.objectStore('files').delete(key);}catch(error){tx.abort();reject(error);}});}
+export async function cacheFile(key,blob){const db=await database();return new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(blob,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});}

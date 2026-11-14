@@ -24,6 +24,10 @@ dist/
 build/
 .cache/
 tmp/
+.taste/build-check/
+.taste/reader-check/
+.taste/repair-check/
+.taste/asset-work/chrome-profile/
 
 # IDE / Editor configs
 .idea/

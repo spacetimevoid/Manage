@@ -1,0 +1,42 @@
+{
+  "originalRequest": "Thiết kế lại các nút trong này sao cho nó giống với hình 2",
+  "subject": "Điều chỉnh kiểu điều khiển reader PDF Manage theo hình tham chiếu 2.",
+  "pageType": "dashboard",
+  "scope": "Chỉnh hình thức các nút và ô nhập trong reader, ưu tiên thanh chuyển trang và chọn chế độ hiển thị; giữ bố cục ứng dụng và chức năng đọc hiện hữu.",
+  "primaryGoal": "Thay các control bo góc vuông, đóng khung dày đặc bằng kiểu tròn, pill và nút thoáng như hình 2.",
+  "audience": "Người học đọc đề PDF và chuyển trang trên máy tính, tablet, điện thoại.",
+  "offer": "Thanh điều khiển đọc gọn, nhẹ và nhất quán với hình tham chiếu, vẫn dễ thao tác.",
+  "primaryAction": "Chuyển trang hoặc chọn chế độ hiển thị PDF.",
+  "creativeControl": "Bám sát hình 2 cho hình dáng, viền, nền và độ thoáng của control; chủ động áp dụng nhất quán cho các nút reader ngoài phần ảnh mẫu mà không đổi chức năng.",
+  "requiredContent": [
+    "Điều hướng trang: nút trước dạng tròn với nền xám nhạt khi disabled, ô số trang dạng pill viền mảnh, tổng số trang dạng chữ và nút sau dạng chevron không khung như hình 2.",
+    "Chế độ hiển thị: control dạng pill nền trắng, viền xám mảnh, nhãn chế độ và chevron bên phải; thay hình thức hộp teal hiện tại theo hình 2.",
+    "Thu phóng và Đặt lại: giữ nút trừ/cộng, phần trăm thực và reset, điều chỉnh hình thức đồng bộ với nhóm điều khiển mới.",
+    "Thao tác học: giữ Hoàn thành đề, Ghi chú, Mở rộng vùng đọc, Thao tác và Cắt câu hỏi; dùng cùng ngôn ngữ nút nhẹ, không thêm hành động.",
+    "Ngữ cảnh và vùng PDF: giữ tên đề, môn, hạn, trạng thái học, finding, notice mẫu và toàn bộ trang PDF đang đọc."
+  ],
+  "constraints": [
+    "Chỉ thay giao diện điều khiển reader, không thiết kế lại các danh sách hoặc shell.",
+    "Hình 2 là nguồn tham chiếu cho hình thức control; hình 1 mô tả phần giao diện cần sửa.",
+    "Giữ Vừa trang làm mặc định và đích Đặt lại; nhãn Vừa chiều rộng trong hình 2 không phải yêu cầu đổi chế độ mặc định.",
+    "Giữ zoom thực, chuyển trang, lưu tùy chọn, bản nháp ghi chú, tập trung và crop đúng nguồn.",
+    "Không sửa hoặc thay nội dung PDF, không làm giảm khả năng thấy trọn trang.",
+    "Mọi vùng bấm tối thiểu 44×44px, kể cả chevron không khung; có nhãn truy cập, focus rõ và thao tác bàn phím.",
+    "Giữ disabled đọc được; selected, hover và pressed rõ mà không phụ thuộc duy nhất vào màu."
+  ],
+  "brandInputs": [
+    "src/kit.css: nền #ffffff, surface #f9f9f9, chữ #1f201d, muted #636361, accent teal #1b6e66, control border #d9d9d6.",
+    "src/styles.css: Instrument Sans cục bộ, shell Open plane, reader hiện dùng control box 44px và hình thức bo góc 6px.",
+    "public/mark.svg: dấu M teal Manage hiện hữu.",
+    "Hình 2: nút trước hình tròn nền xám nhạt, ô trang pill trắng, tổng trang không khung, chevron sau không khung, lựa chọn chế độ pill trắng viền xám mảnh."
+  ],
+  "assumptions": [
+    "Ưu tiên đối chiếu trực tiếp nhóm chuyển trang và chọn chế độ vì đây là các control xuất hiện trong cả hai hình.",
+    "Các nút reader khác được đồng bộ về đường viền nhẹ và độ bo phù hợp, không buộc mọi nút có nhãn dài thành hình tròn.",
+    "Giữ các control zoom hiện có dù hình 2 không chụp chúng; không suy ra yêu cầu loại bỏ chức năng từ phần ảnh bị giới hạn.",
+    "Không dùng tên Cân bằng hóa học hoặc số trang trong ảnh để thay dữ liệu tài liệu hiện hữu.",
+    "Giữ phản hồi hữu ích khoảng 180ms ease-out, tôn trọng reduced motion; không thêm entrance hoặc chuyển động trang trí."
+  ],
+  "unresolved": [],
+  "explicitAnswers": []
+}

@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "manage-mark",
+      "kind": "image",
+      "status": "existing",
+      "purpose": "Dấu nhận diện Manage trong shell được bảo toàn.",
+      "requirements": [
+        "SVG hiện hữu đã kiểm tra, viewBox 0 0 32 32.",
+        "Giữ nguyên dấu M nét teal #1b6e66, nền trong suốt và khoảng trống quanh nét.",
+        "Không dùng ảnh tham chiếu làm toolbar; dựng các control bằng HTML/CSS và icon Lucide hiện hữu tại public/vendor/lucide.min.js.",
+        "PDF tiếp tục render từ tệp gốc bằng PDF.js, không dùng screenshot thay tài liệu."
+      ],
+      "role": "logo",
+      "sectionIds": [
+        "shell"
+      ],
+      "aspectRatio": "1:1",
+      "composition": "Dấu M nét căn giữa khung vuông, giữ toàn bộ hình và nền trong suốt; chữ Manage nằm ngoài hình, không chèn chữ hoặc crop logo.",
+      "source": {
+        "kind": "project",
+        "reference": "public/mark.svg",
+        "license": "Tài sản nhận diện Manage hiện hữu trong dự án; giữ nguyên nguồn."
+      },
+      "destination": "public/mark.svg"
+    },
+    {
+      "id": "font-instrument-sans",
+      "kind": "font",
+      "status": "existing",
+      "purpose": "Font giao diện và số trang, phần trăm trong reader Manage.",
+      "requirements": [
+        "TTF cục bộ đã kiểm tra: 194336 byte, magic 00010000.",
+        "Đã đối chiếu trực tiếp với InstrumentSans[wdth,wght].ttf trong Google Fonts repository chính thức; nội dung byte trùng khớp.",
+        "SHA-256: b24f1812584816958afcf22e22d08e44318c5e51651e25d2438efdde389b33b1.",
+        "Variable upright có trục wght 400–700 và wdth 75–100; dùng 400, 500, 600, 700, không giả lập italic.",
+        "Giữ public/assets/fonts/OFL-InstrumentSans.txt: 4403 byte, đã đối chiếu byte với OFL.txt chính thức, giấy phép SIL OFL 1.1.",
+        "Build xác minh document.fonts.ready, FontFace loaded, document.fonts.check từng trọng lượng và tabular-nums; không thay bằng Geist hoặc system fallback.",
+        "Giữ nguyên font và nội dung bên trong PDF."
+      ],
+      "role": "font",
+      "sectionIds": [
+        "shell",
+        "reader-context",
+        "reader-controls",
+        "pdf-reading-surface",
+        "reader-notes-focus"
+      ],
+      "source": {
+        "kind": "project",
+        "reference": "public/assets/fonts/InstrumentSans-variable.ttf",
+        "license": "Copyright 2022 The Instrument Sans Project Authors; SIL Open Font License 1.1. Nguồn chính thức đã đối chiếu: https://github.com/google/fonts/tree/main/ofl/instrumentsans. Giấy phép cục bộ: public/assets/fonts/OFL-InstrumentSans.txt.",
+        "contentType": "application/octet-stream"
+      },
+      "destination": "public/assets/fonts/InstrumentSans-variable.ttf"
+    }
+  ]
+}

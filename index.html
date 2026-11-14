@@ -1,12 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=src/index.html">
-  <title>Personal Study Vault</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Manage, không gian học tập cá nhân: quản lý đề PDF, ghi chú và ôn lại câu khó.">
+  <title>Manage · Không gian học tập</title>
+  <link rel="icon" href="/mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preload" href="/assets/fonts/InstrumentSans-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/src/kit.css">
+  <link rel="stylesheet" href="/src/styles.css">
+  <script defer src="/vendor/lucide.min.js"></script>
+  <script defer src="/src/charts.js"></script>
+  <script type="module" src="/src/app.js"></script>
 </head>
-<body style="font-family: sans-serif; padding: 2rem; text-align: center; background-color: #1f1f1f; color: #e5e7eb;">
-  <p>Redirecting to Personal Study Vault...</p>
-  <p><a href="src/index.html" style="color: #60a5fa;">Click here if you are not redirected automatically</a></p>
+<body>
+  <div id="app" class="app" aria-busy="true"></div>
+  <div id="announcer" class="sr-only" aria-live="polite"></div>
+  <div id="toast" role="status" hidden></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <noscript>Manage cần JavaScript để mở PDF và lưu ghi chú trên thiết bị.</noscript>
 </body>
 </html>

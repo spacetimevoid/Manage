@@ -1,0 +1,37 @@
+{
+  "id": "study-pdf-d3",
+  "documentId": "D3",
+  "title": "Cân bằng hóa học",
+  "subject": "Hóa học",
+  "pageCount": 3,
+  "mimeType": "application/pdf",
+  "pdfUrl": "/assets/documents/study-d3.pdf",
+  "sample": true,
+  "notice": "Dữ liệu mẫu",
+  "sourceHtml": ".taste/asset-work/study-d3.html",
+  "provenance": "Original illustrative educational content created for Manage in this task. No institution affiliation or external exam source.",
+  "sha256": "7e8fbce89a97f6ac64ae3dbdc1243f12ab9d8423f0685af08b92719cd97428ea",
+  "problemCrops": [
+    {
+      "id": "problem-crop-p4",
+      "sourcePage": 2,
+      "imageUrl": "/assets/problems/problem-crop-p4.png",
+      "cropRect": {
+        "x": 0.08067226890756303,
+        "y": 0.19002375296912113,
+        "width": 0.838655462184874,
+        "height": 0.21377672209026127
+      },
+      "renderSize": {
+        "width": 1785,
+        "height": 2526
+      },
+      "pixelRect": {
+        "x": 144,
+        "y": 480,
+        "width": 1497,
+        "height": 540
+      }
+    }
+  ]
+}
