@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
-const files=['src/app.js','src/reader.js','src/reader-geometry.js','src/data.js','src/types.js','src/storage.js','src/charts.js','public/sw.js','scripts/serve.mjs','scripts/build.mjs'];
+const files=['src/app.js','src/reader.js','src/reader-geometry.js','src/data.js','src/types.js','src/storage.js','src/supabase.js','src/charts.js','public/sw.js','scripts/serve.mjs','scripts/build.mjs'];
 for(const file of files){const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});if(r.status!==0)throw Error(r.stderr);}
 for(const file of ['package.json','public/manifest.webmanifest'])JSON.parse(await fs.readFile(file,'utf8'));
 const html=await fs.readFile('index.html','utf8');if(html.includes('.taste/'))throw Error('Site depends on working folder');

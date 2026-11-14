@@ -134,10 +134,12 @@ WITH CHECK (bucket_id = 'problem_snippets');
 
 -- ==============================================================================
 -- MIGRATION SCRIPT (For existing databases)
--- Run this if the 'sources' table was created previously without thumbnail_url or notes:
+-- Run this in the Supabase Dashboard -> SQL Editor to ensure all columns exist:
 -- ==============================================================================
 ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
 ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS page_count INT DEFAULT 1;
+ALTER TABLE public.sources ADD COLUMN IF NOT EXISTS last_page INT DEFAULT 1;
 ALTER TABLE public.problems ADD COLUMN IF NOT EXISTS solution_image_path TEXT;
 
 

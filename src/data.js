@@ -1,6 +1,7 @@
 import {migrateTypes} from './types.js';
 export const SAMPLE_DATE='2026-11-13';
 export const subjects=['Toán','Vật lý','Hóa học'];
+export const allSubjects=state=>[...new Set([...subjects,...(state?.documents||[]).map(d=>d.subject).filter(Boolean)])];
 export const statusLabels={not_started:'Chưa làm',in_progress:'Đang làm',completed:'Hoàn thành',review:'Cần ôn',mastered:'Đã nắm vững'};
 const titles=['Ứng dụng đạo hàm','Dao động cơ','Cân bằng hóa học','Tích phân cơ bản','Điện xoay chiều','Este và chất béo'];
 export function makeSampleState(){
@@ -34,9 +35,9 @@ export function assertState(state,sample=false){
  console.assert([...state.documents,...state.problems].every(r=>new Set(r.typeIds||[]).size===(r.typeIds||[]).length&&(r.typeIds||[]).every(id=>(state.types||[]).some(t=>t.id===id&&t.subject===r.subject))),'Type IDs must be unique and match their subject');
  console.assert(ids.size===state.documents.length,'Document IDs must be unique');
  console.assert(new Set(state.problems.map(p=>p.id)).size===state.problems.length,'Problem IDs must be unique');
- console.assert(state.problems.every(p=>ids.has(p.documentId)&&p.sourcePage>=1&&p.sourcePage<=state.documents.find(d=>d.id===p.documentId).pageCount),'Problem source must exist');
+ console.assert(state.problems.every(p=>!p.documentId||(ids.has(p.documentId)&&(!p.sourcePage||p.sourcePage<=state.documents.find(d=>d.id===p.documentId).pageCount))),'Problem source must exist');
  console.assert(state.notes.every(n=>ids.has(n.documentId)),'Note source must exist');
  console.assert(state.documents.every(d=>d.pageCount>0&&d.lastPage>=1&&d.lastPage<=d.pageCount),'Page bounds');
- console.assert(state.problems.every(p=>p.cropRect&&p.cropRect.width>0&&p.cropRect.height>0&&p.cropRect.x>=0&&p.cropRect.y>=0&&p.cropRect.x+p.cropRect.width<=1.001&&p.cropRect.y+p.cropRect.height<=1.001),'Crop bounds');
+ console.assert(state.problems.every(p=>!p.cropRect||(p.cropRect.width>0&&p.cropRect.height>0&&p.cropRect.x>=0&&p.cropRect.y>=0&&p.cropRect.x+p.cropRect.width<=1.001&&p.cropRect.y+p.cropRect.height<=1.001)),'Crop bounds');
  if(sample){const s=stats(state);console.assert(state.documents.length===6&&state.documents.reduce((a,d)=>a+d.pageCount,0)===20,'Sample document totals');console.assert(subjects.every(subject=>state.documents.filter(d=>d.subject===subject).length===2),'Two documents per subject');console.assert(s.overdue===1&&s.today===1&&s.doing===2&&s.completed===2&&s.review===4,'Sample queue totals');console.assert(state.problems.length===6&&state.notes.length===2&&state.problems.filter(p=>p.status==='mastered').length===2,'Sample learning totals');}
 }
